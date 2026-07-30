@@ -599,6 +599,11 @@ function renderTools(profKey) {
    HTML menu (browser / mobile) and the 3D menu panel (VR).
    ========================================================= */
 
+/* Clip used in the headset when a tool has no videoFile of its own. Two formats
+   are offered because codec support varies: Quest Browser prefers H.264/MP4,
+   while builds without proprietary codecs can only decode VP9/WebM. */
+const VR_CLIP_FALLBACK = ["media/sample-tool-clip.mp4", "media/sample-tool-clip.webm"];
+
 /* Builds the ordered list of things a student can explore for a tool:
    the overview, each labelled part, how it's used, and the video. Parts
    carry a 3D position so the numbered marker on the model matches the row. */
@@ -609,7 +614,17 @@ function menuItemsFor(tool) {
     items.push({ kind: "part", label: h.label, sub: "Part of the tool", body: h.body, pos: h.pos });
   });
   items.push({ kind: "info", label: "How it's used in the trade", sub: "Where this tool fits on the job", body: tool.usage });
-  if (tool.video) items.push({ kind: "video", label: "Watch it in action", sub: "Short video clip", body: "See this tool being used on a real job.", video: tool.video });
+  if (tool.video || tool.videoFile) {
+    items.push({
+      kind: "video", label: "Watch it in action", sub: "Short video clip",
+      body: "See this tool being used on a real job.",
+      video: tool.video,
+      // In VR the clip has to be a real video file so it can be drawn onto a
+      // surface in the scene; a YouTube embed cannot be. Set videoFile per tool
+      // to use College footage — see media/README.md.
+      videoFile: tool.videoFile || VR_CLIP_FALLBACK
+    });
+  }
   return items;
 }
 
@@ -656,7 +671,11 @@ function closeOverlay() {
 
 function openInfoModal(item) {
   // In VR, render into the 3D scene instead — a flat DOM modal can't be read comfortably.
-  if (renderer && renderer.xr.isPresenting) { openVRInfoPanel(item); return; }
+  if (renderer && renderer.xr.isPresenting) {
+    if (item.kind === "video") openVRVideoScreen(item);
+    else openVRInfoPanel(item);
+    return;
+  }
 
   const tool = state.tool;
   let bodyHtml = `<p>${item.body}</p>`;
@@ -988,7 +1007,15 @@ function panelMesh(w, h, draw) {
   const tex = new THREE.CanvasTexture(c);
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.anisotropy = 4;
-  return new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ map: tex, transparent: true }));
+  // Double-sided: a student who steps to the side of a panel can still use it,
+  // and dropping backface culling avoids a ray landing exactly on the quad's
+  // diagonal being rejected by both triangles.
+  const mesh = new THREE.Mesh(
+    new THREE.PlaneGeometry(w, h),
+    new THREE.MeshBasicMaterial({ map: tex, transparent: true, side: THREE.DoubleSide })
+  );
+  mesh.renderOrder = 2;
+  return mesh;
 }
 
 /* A tappable 3D button: rounded card with a badge and a label of up to two lines. */
@@ -1095,7 +1122,7 @@ function buildVRUI(tool) {
 
   const items = state.menuItems || menuItemsFor(tool);
   const step = 0.125;
-  const rows = items.length + 1; // learning points + the quiz
+  const rows = items.length + 2; // learning points + quiz + change-tool
   // Centre the whole stack on the panel so it stays inside a comfortable
   // field of view however many points a tool has.
   let y = (rows - 1) * step / 2;
@@ -1104,13 +1131,25 @@ function buildVRUI(tool) {
   title.position.set(0, y + 0.13, 0);
   vrMenuGroup.add(title);
 
+  // Navigation first: a student who has finished with this tool must be able to
+  // get back to the tool and trade lists without taking the headset off.
+  const navBtn = makeVRButton("Change tool or trade", null, { w: 0.52, h: 0.105 });
+  navBtn.position.set(0, y, 0);
+  navBtn.userData.action = () => openVRToolList();
+  vrMenuGroup.add(navBtn);
+  y -= step;
+
   items.forEach(item => {
     const badge = item.kind === "part" ? item.partNo : (item.kind === "video" ? "▶" : "i");
     const btn = makeVRButton(item.label, badge, {
       accent: item.kind === "video" ? PANEL.gold : PANEL.purple
     });
     btn.position.set(0, y, 0);
-    btn.userData.action = () => { highlightMarker(item); openVRInfoPanel(item); };
+    btn.userData.action = () => {
+      highlightMarker(item);
+      if (item.kind === "video") openVRVideoScreen(item);
+      else openVRInfoPanel(item);
+    };
     vrMenuGroup.add(btn);
     y -= step;
   });
@@ -1127,7 +1166,9 @@ function clearVRUI() {
 }
 
 function closeVRPanel() {
+  stopVRVideo();
   if (vrPanelGroup && vrUI) { vrUI.remove(vrPanelGroup); vrPanelGroup = null; }
+  if (hotspotGroup) hotspotGroup.visible = true;
 }
 
 /* Opens a reading panel in front of the tool, with a Close button. */
@@ -1137,10 +1178,7 @@ function openVRInfoPanel(item) {
   vrPanelGroup = newPanelGroup();
 
   const kicker = item.partNo ? `${state.tool.name} · point ${item.partNo}` : state.tool.name;
-  const body = item.kind === "video"
-    ? item.body + "  —  Videos play on the flat screen: exit VR, or take the headset off, to watch this clip."
-    : item.body;
-  const panel = makeVRTextPanel(item.label, body, kicker, { w: 0.86 });
+  const panel = makeVRTextPanel(item.label, item.body, kicker, { w: PANEL_W });
   const bottom = placeFromTop(panel, PANEL_TOP);
 
   const close = makeVRButton("Close", "×", { w: 0.28, h: 0.09, filled: true, accent: PANEL.purple });
@@ -1149,14 +1187,18 @@ function openVRInfoPanel(item) {
   vrPanelGroup.add(close);
 }
 
-/* Reading panels appear to the left of the tool, angled towards the viewer. */
-const PANEL_TOP = 0.34;
+/* Panels open directly over the tool, square to the viewer, so reading one
+   needs no head movement. The menu stays off to the right. */
+const PANEL_TOP = 0.32;
+const PANEL_W = 0.72;
 
 function newPanelGroup() {
   const g = new THREE.Group();
-  g.position.set(-0.66, 0.06, 0.16);
-  g.rotation.y = 0.5;
+  g.position.set(0, 0.05, 0.14);
   vrUI.add(g);
+  // The panel covers the tool, so the numbered markers would only show through
+  // in the gaps between cards. They come back when the panel closes.
+  if (hotspotGroup) hotspotGroup.visible = false;
   return g;
 }
 
@@ -1167,6 +1209,181 @@ function placeFromTop(mesh, topY) {
   mesh.position.set(0, topY - h / 2, 0);
   vrPanelGroup.add(mesh);
   return topY - h;
+}
+
+/* =========================================================
+   IN-VR VIDEO
+
+   A YouTube iframe cannot be drawn into a 3D scene, so in the headset the clip
+   is a real video file painted onto a screen in front of the student. No need
+   to leave VR to watch it.
+   ========================================================= */
+
+let vrVideoEl = null;
+
+function stopVRVideo() {
+  if (!vrVideoEl) return;
+  vrVideoEl.pause();
+  vrVideoEl.innerHTML = "";
+  vrVideoEl.removeAttribute("src");
+  vrVideoEl.load();
+  if (vrVideoEl.parentNode) vrVideoEl.parentNode.removeChild(vrVideoEl);
+  vrVideoEl = null;
+}
+
+const VIDEO_MIME = { mp4: "video/mp4", webm: "video/webm", m4v: "video/mp4", ogv: "video/ogg" };
+
+/* Builds the <video> element. Sources are offered in order so the browser can
+   pick a codec it supports; the element is attached to the document (but kept
+   out of the way) because some headset browsers won't decode a detached one. */
+function makeVideoElement(videoFile) {
+  const urls = Array.isArray(videoFile) ? videoFile : [videoFile];
+  const video = document.createElement("video");
+  video.playsInline = true;
+  video.loop = true;
+  video.preload = "auto";
+  video.setAttribute("webkit-playsinline", "");
+  video.style.cssText = "position:fixed;left:-9999px;top:0;width:2px;height:2px;opacity:0;pointer-events:none";
+  urls.forEach(url => {
+    const s = document.createElement("source");
+    s.src = url;
+    const ext = url.split("?")[0].split(".").pop().toLowerCase();
+    if (VIDEO_MIME[ext]) s.type = VIDEO_MIME[ext];
+    video.appendChild(s);
+  });
+  document.body.appendChild(video);
+  video.load();
+  return video;
+}
+
+function openVRVideoScreen(item) {
+  closeVRPanel();
+  if (!vrUI) return;
+  vrPanelGroup = newPanelGroup();
+
+  const head = makeVRTextPanel("Watch it in action", null, state.tool.name, { w: PANEL_W, titleSize: 32 });
+  let y = placeFromTop(head, PANEL_TOP) - 0.02;
+
+  const video = makeVideoElement(item.videoFile);
+  vrVideoEl = video;
+
+  const tex = new THREE.VideoTexture(video);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  const vw = PANEL_W, vh = vw * 9 / 16;
+  const screenMesh = new THREE.Mesh(
+    new THREE.PlaneGeometry(vw, vh),
+    new THREE.MeshBasicMaterial({ map: tex, side: THREE.DoubleSide })
+  );
+  screenMesh.renderOrder = 2;
+  screenMesh.position.set(0, y - vh / 2, 0.001);
+  vrPanelGroup.add(screenMesh);
+  y -= vh;
+
+  // A status card under the screen, rebuilt when playback state changes.
+  let statusMesh = null;
+  function setStatus(text) {
+    if (statusMesh) { vrPanelGroup.remove(statusMesh); statusMesh = null; }
+    if (!text) return;
+    statusMesh = makeVRTextPanel(text, null, null, { w: PANEL_W, titleSize: 26 });
+    statusMesh.position.set(0, y - statusMesh.geometry.parameters.height / 2 - 0.015, 0.001);
+    vrPanelGroup.add(statusMesh);
+  }
+
+  // The trigger press that opened this panel counts as user activation, so
+  // playback with sound is normally allowed; fall back to muted if it isn't.
+  video.play().then(() => setStatus(null)).catch(() => {
+    video.muted = true;
+    video.play()
+      .then(() => setStatus("Playing without sound — press Play to enable audio."))
+      .catch(() => setStatus("Press Play to start the clip."));
+  });
+  video.addEventListener("error", () => setStatus("This clip could not be played on this headset."));
+
+  const rowY = y - 0.09;
+  const playBtn = makeVRButton("Play / Pause", null, { w: 0.3, h: 0.1, filled: true, accent: PANEL.purple });
+  playBtn.position.set(-0.21, rowY, 0.002);
+  playBtn.userData.action = () => {
+    if (video.paused) {
+      video.muted = false;
+      video.play().then(() => setStatus(null)).catch(() => setStatus("Press Play again to start."));
+    } else video.pause();
+  };
+  vrPanelGroup.add(playBtn);
+
+  const restart = makeVRButton("Restart", null, { w: 0.24, h: 0.1 });
+  restart.position.set(0.06, rowY, 0.002);
+  restart.userData.action = () => { video.currentTime = 0; video.play().catch(() => {}); };
+  vrPanelGroup.add(restart);
+
+  const close = makeVRButton("Close", "×", { w: 0.2, h: 0.1 });
+  close.position.set(0.29, rowY, 0.002);
+  close.userData.action = closeVRPanel;
+  vrPanelGroup.add(close);
+}
+
+/* =========================================================
+   IN-VR NAVIGATION
+
+   Without this a student who opens a tool in the headset is stuck: the tool
+   list and trade list are HTML screens they cannot see while immersed.
+   ========================================================= */
+
+function openVRToolList(profKey) {
+  closeVRPanel();
+  if (!vrUI) return;
+  const key = profKey || state.profession;
+  const prof = PROFESSIONS[key];
+  vrPanelGroup = newPanelGroup();
+
+  const head = makeVRTextPanel(prof.name + " tools", "Pick a tool to explore.", "Change tool", { w: PANEL_W, titleSize: 34 });
+  let y = placeFromTop(head, PANEL_TOP) - 0.07;
+
+  prof.tools.forEach(t => {
+    const current = key === state.profession && state.tool && t.id === state.tool.id;
+    const btn = makeVRButton(t.name + (current ? "  ·  current" : ""), t.icon, { w: PANEL_W, h: 0.115, filled: current, accent: PANEL.purple });
+    btn.position.set(0, y, 0.002);
+    btn.userData.action = () => vrGoToTool(key, t.id);
+    vrPanelGroup.add(btn);
+    y -= 0.125;
+  });
+
+  const trades = makeVRButton("Choose another trade", null, { w: 0.42, h: 0.1 });
+  trades.position.set(-0.15, y - 0.04, 0.002);
+  trades.userData.action = openVRTradeList;
+  vrPanelGroup.add(trades);
+
+  const close = makeVRButton("Close", "×", { w: 0.2, h: 0.1 });
+  close.position.set(0.26, y - 0.04, 0.002);
+  close.userData.action = closeVRPanel;
+  vrPanelGroup.add(close);
+}
+
+function openVRTradeList() {
+  closeVRPanel();
+  if (!vrUI) return;
+  vrPanelGroup = newPanelGroup();
+
+  const head = makeVRTextPanel("Choose a trade", "Every trade has its own toolkit.", "Change trade", { w: PANEL_W, titleSize: 34 });
+  let y = placeFromTop(head, PANEL_TOP) - 0.07;
+
+  Object.entries(PROFESSIONS).filter(([, p]) => p.available).forEach(([key, prof]) => {
+    const btn = makeVRButton(prof.name, prof.icon, { w: PANEL_W, h: 0.12, filled: key === state.profession, accent: PANEL.purple });
+    btn.position.set(0, y, 0.002);
+    btn.userData.action = () => openVRToolList(key);
+    vrPanelGroup.add(btn);
+    y -= 0.13;
+  });
+
+  const close = makeVRButton("Close", "×", { w: 0.2, h: 0.1 });
+  close.position.set(0, y - 0.04, 0.002);
+  close.userData.action = closeVRPanel;
+  vrPanelGroup.add(close);
+}
+
+/* Loads another tool without leaving the VR session. */
+function vrGoToTool(profKey, toolId) {
+  closeVRPanel();
+  navigate(`#/tool/${profKey}/${toolId}`);
 }
 
 /* The quiz, rendered as 3D panels so it works with the controller ray. */
@@ -1186,7 +1403,7 @@ function openVRQuiz(tool) {
         `You scored ${score} out of ${tool.quiz.length}. ` +
         (perfect ? "You've got a solid grip on this tool." : "Revisit the points on the menu, then try again."),
         `${tool.name} · quiz complete`,
-        { w: 0.86 }
+        { w: PANEL_W }
       );
       const bottom = placeFromTop(panel, PANEL_TOP);
       const again = makeVRButton("Try again", null, { filled: true, accent: PANEL.purple, w: 0.34, h: 0.1 });
@@ -1202,11 +1419,11 @@ function openVRQuiz(tool) {
 
     const q = tool.quiz[index];
     const head = makeVRTextPanel(q.q, "Point at an answer and pull the trigger.",
-      `${tool.name} · question ${index + 1} of ${tool.quiz.length}`, { w: 0.86, titleSize: 34 });
+      `${tool.name} · question ${index + 1} of ${tool.quiz.length}`, { w: PANEL_W, titleSize: 32 });
     let y = placeFromTop(head, PANEL_TOP) - 0.08;
 
     q.options.forEach((opt, i) => {
-      const btn = makeVRButton(opt, String.fromCharCode(65 + i), { w: 0.84, h: 0.115 });
+      const btn = makeVRButton(opt, String.fromCharCode(65 + i), { w: PANEL_W - 0.02, h: 0.115 });
       btn.position.set(0, y, 0);
       btn.userData.action = () => {
         if (i === q.correct) score++;
@@ -1224,7 +1441,7 @@ function openVRQuiz(tool) {
       correct ? "Correct!" : "Not quite",
       correct ? q.options[q.correct] : "The right answer is: " + q.options[q.correct],
       state.tool.name,
-      { w: 0.86 }
+      { w: PANEL_W }
     );
     const bottom = placeFromTop(panel, PANEL_TOP);
     const btn = makeVRButton("Continue", null, { filled: true, accent: PANEL.purple, w: 0.36, h: 0.1 });
@@ -1377,6 +1594,7 @@ function buildScene(tool) {
     marker.position.set(...item.pos);
     const disc = new THREE.Sprite(new THREE.SpriteMaterial({ map: numberTexture(i + 1), transparent: true, depthTest: false }));
     disc.scale.setScalar(markerScale);
+    disc.renderOrder = -1; // drawn before VR panels so a panel covers it
     marker.add(disc);
     marker.userData.item = item;
     marker.userData.disc = disc;
@@ -1478,6 +1696,9 @@ function setRayFromController(controller) {
   tempMatrix.identity().extractRotation(controller.matrixWorld);
   raycaster.ray.origin.setFromMatrixPosition(controller.matrixWorld);
   raycaster.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix);
+  // Sprites need a camera to raycast against; without one three throws. The VR
+  // panels are plain meshes today, but this keeps the ray safe either way.
+  raycaster.camera = renderer.xr.isPresenting ? renderer.xr.getCamera() : camera;
 }
 
 /* Pulse the marker matching a menu row so students can see where on the tool it is. */
