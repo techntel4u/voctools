@@ -50,7 +50,7 @@
   #backBtn:hover{ background:rgba(255,255,255,.22); }
 
   /* ---------- Screens (2D) ---------- */
-  .screen{ position:absolute; top:64px; left:0; right:0; bottom:0; overflow-y:auto; padding:36px 6vw 60px; }
+  .screen{ position:absolute; top:64px; left:0; right:0; bottom:0; overflow-y:auto; padding:36px 6vw 60px; background:var(--bg); }
   .screen.hidden{ display:none; }
 
   /* Home */
@@ -114,8 +114,9 @@
   #hint{
     position:absolute; bottom:26px; left:50%; transform:translateX(-50%); pointer-events:none;
     color:rgba(255,255,255,.9); font-size:13px; background:rgba(0,0,0,.35); padding:8px 16px; border-radius:999px;
-    backdrop-filter:blur(4px);
+    backdrop-filter:blur(4px); transition:opacity .6s; white-space:nowrap;
   }
+  #hint.hint-hidden{ opacity:0; }
   #vr-btn-slot{ position:absolute; bottom:26px; right:26px; }
   #quiz-launch{
     position:absolute; top:20px; right:24px; background:var(--gold); color:#3a2c05; border:none;
@@ -196,6 +197,18 @@
     #topbar .appname{ font-size:15px; }
     #crumb{ display:none; }
     #screen-home h1{ font-size:34px; }
+  }
+
+  /* On small screens, viewer controls move to the bottom so they never cover the
+     tool heading, and the heading spans the full width. */
+  @media (max-width:700px){
+    #tool-heading{ top:14px; left:16px; right:16px; max-width:none; }
+    #tool-heading h2{ font-size:19px; }
+    #tool-heading p{ font-size:12px; }
+    #quiz-launch{ top:auto; bottom:18px; right:16px; padding:12px 18px; }
+    #reset-view{ top:auto; bottom:18px; left:16px; right:auto; }
+    #vr-btn-slot{ bottom:72px; right:16px; }
+    #hint{ bottom:130px; max-width:90vw; white-space:normal; text-align:center; }
   }
 </style>
 </head>
@@ -452,13 +465,48 @@ function showScreen(name) {
   if (name !== "viewer") stopViewer();
 }
 
-$("#startBtn").addEventListener("click", () => { renderProfessions(); showScreen("professions"); });
+/* Each screen is a real page in browser history (hash routes), so the browser /
+   phone / headset back button steps back through the app instead of leaving it. */
+function navigate(hash) {
+  if (location.hash === hash) renderRoute();
+  else location.hash = hash;
+}
 
-$("#backBtn").addEventListener("click", () => {
-  if (!$("#screen-viewer").classList.contains("hidden")) { renderTools(state.profession); showScreen("tools"); return; }
-  if (!$("#screen-tools").classList.contains("hidden")) { renderProfessions(); showScreen("professions"); return; }
+function parentRoute() {
+  const parts = location.hash.replace(/^#\/?/, "").split("/");
+  if (parts[0] === "tool") return "#/tools/" + parts[1];
+  if (parts[0] === "tools") return "#/trades";
+  return "#/";
+}
+
+function renderRoute() {
+  closeOverlay();
+  const parts = location.hash.replace(/^#\/?/, "").split("/");
+  if (parts[0] === "trades") { renderProfessions(); showScreen("professions"); return; }
+  if (parts[0] === "tools" && PROFESSIONS[parts[1]] && PROFESSIONS[parts[1]].available) {
+    state.profession = parts[1];
+    renderTools(parts[1]);
+    showScreen("tools");
+    return;
+  }
+  if (parts[0] === "tool" && PROFESSIONS[parts[1]]) {
+    const tool = PROFESSIONS[parts[1]].tools.find(t => t.id === parts[2]);
+    if (tool) {
+      state.profession = parts[1];
+      state.tool = tool;
+      openViewer(tool);
+      showScreen("viewer");
+      return;
+    }
+  }
   showScreen("home");
-});
+}
+
+window.addEventListener("hashchange", renderRoute);
+
+$("#startBtn").addEventListener("click", () => navigate("#/trades"));
+
+$("#backBtn").addEventListener("click", () => navigate(parentRoute()));
 
 function renderProfessions() {
   const grid = $("#profession-grid");
@@ -473,7 +521,7 @@ function renderProfessions() {
       <p>${prof.tagline}</p>
       <div class="go">${prof.available ? "Explore tools &rarr;" : "Coming soon"}</div>
     `;
-    if (prof.available) card.addEventListener("click", () => { state.profession = key; renderTools(key); showScreen("tools"); });
+    if (prof.available) card.addEventListener("click", () => navigate("#/tools/" + key));
     grid.appendChild(card);
   });
 }
@@ -497,7 +545,7 @@ function renderTools(profKey) {
         <span class="tag">View in 3D &rarr;</span>
       </div>
     `;
-    card.addEventListener("click", () => { state.tool = tool; openViewer(tool); showScreen("viewer"); });
+    card.addEventListener("click", () => navigate("#/tool/" + profKey + "/" + tool.id));
     grid.appendChild(card);
   });
 }
@@ -778,7 +826,8 @@ const MODEL_BUILDERS = {
 let renderer, camera, scene, toolPivot, hotspotGroup, worldGroup, raycaster, spotLight;
 let dragging = false, dragStart = { x: 0, y: 0 }, rotStart = { x: 0, y: 0 }, moved = false;
 let autoRotate = false;
-let controller1;
+let controllers = [];
+let hintTimer = null;
 const tempMatrix = new THREE.Matrix4();
 
 // Where the tool platform sits during a VR session: roughly eye height, just in front of the viewer.
@@ -794,23 +843,30 @@ function initRenderer() {
 
   raycaster = new THREE.Raycaster();
 
-  controller1 = renderer.xr.getController(0);
-  controller1.addEventListener("select", onSelectVR);
-  const rayGeo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, -1)]);
-  const rayLine = new THREE.Line(rayGeo, new THREE.LineBasicMaterial({ color: 0xC9A227, transparent: true, opacity: 0.7 }));
-  rayLine.scale.z = 3;
-  controller1.add(rayLine);
+  // Listen on BOTH controllers — on Quest, controller 0 can be the left hand,
+  // and students will point with either one.
+  for (let i = 0; i < 2; i++) {
+    const c = renderer.xr.getController(i);
+    c.addEventListener("select", () => onSelectVR(c));
+    const rayGeo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, -1)]);
+    const rayLine = new THREE.Line(rayGeo, new THREE.LineBasicMaterial({ color: 0xC9A227, transparent: true, opacity: 0.7 }));
+    rayLine.scale.z = 3;
+    c.add(rayLine);
+    controllers.push(c);
+  }
   scene = new THREE.Scene();
-  scene.add(controller1);
+  controllers.forEach(c => scene.add(c));
 
   renderer.xr.addEventListener("sessionstart", () => {
     autoRotate = true;
     if (worldGroup) worldGroup.position.copy(VR_WORLD_POS);
+    if (hotspotGroup) hotspotGroup.children.forEach(m => m.scale.setScalar(1.6));
     $("#vr-quiz-btn").style.display = "block";
   });
   renderer.xr.addEventListener("sessionend", () => {
     autoRotate = false;
     if (worldGroup) worldGroup.position.set(0, 0, 0);
+    if (hotspotGroup) hotspotGroup.children.forEach(m => m.scale.setScalar(1));
     $("#vr-quiz-btn").style.display = "none";
     closeOverlay();
     onResize();
@@ -834,7 +890,7 @@ function buildScene(tool) {
   scene = new THREE.Scene();
   scene.background = new THREE.Color(0x1a1420);
   scene.fog = new THREE.Fog(0x1a1420, 4, 9);
-  scene.add(controller1);
+  controllers.forEach(c => scene.add(c));
 
   camera = new THREE.PerspectiveCamera(45, (window.innerWidth) / (window.innerHeight - 64), 0.05, 50);
   camera.position.set(0, 0.1, 2.1);
@@ -891,13 +947,21 @@ function buildScene(tool) {
       new THREE.MeshBasicMaterial({ color: hs.isVideo ? 0xC9A227 : 0xffffff, transparent: true, opacity: 0.25 })
     );
     marker.add(glow);
+    // Invisible oversized hit sphere — the visible dot is far too small a target
+    // for a controller ray at arm's length or a fingertip on a phone.
+    const hit = new THREE.Mesh(new THREE.SphereGeometry(0.09, 8, 8), new THREE.MeshBasicMaterial({ visible: false }));
+    hit.userData.hotspot = hs;
+    marker.add(hit);
     hotspotGroup.add(marker);
   });
+
+  if (renderer.xr.isPresenting) hotspotGroup.children.forEach(m => m.scale.setScalar(1.6));
 
   autoRotate = false;
 }
 
 function onPointerDown(e) {
+  $("#hint").classList.add("hint-hidden");
   dragging = true; moved = false;
   dragStart.x = e.clientX; dragStart.y = e.clientY;
   rotStart.x = toolPivot.rotation.y; rotStart.y = toolPivot.rotation.x;
@@ -922,16 +986,24 @@ function tryPickDesktop(e) {
     -((e.clientY - rect.top) / rect.height) * 2 + 1
   );
   raycaster.setFromCamera(mouse, camera);
-  const hits = raycaster.intersectObjects(hotspotGroup.children, false);
-  if (hits.length) openHotspotPopup(hits[0].object.userData.hotspot);
+  pickHotspot();
 }
 
-function onSelectVR() {
-  tempMatrix.identity().extractRotation(controller1.matrixWorld);
-  raycaster.ray.origin.setFromMatrixPosition(controller1.matrixWorld);
+function onSelectVR(controller) {
+  if (modalHost.firstChild) return; // a popup is open in the dom-overlay — don't pick through it
+  tempMatrix.identity().extractRotation(controller.matrixWorld);
+  raycaster.ray.origin.setFromMatrixPosition(controller.matrixWorld);
   raycaster.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix);
-  const hits = raycaster.intersectObjects(hotspotGroup.children, false);
-  if (hits.length) openHotspotPopup(hits[0].object.userData.hotspot);
+  pickHotspot();
+}
+
+function pickHotspot() {
+  const hits = raycaster.intersectObjects(hotspotGroup.children, true);
+  for (const h of hits) {
+    let o = h.object;
+    while (o && !o.userData.hotspot) o = o.parent;
+    if (o) { openHotspotPopup(o.userData.hotspot); return; }
+  }
 }
 
 function animate() {
@@ -946,6 +1018,12 @@ function openViewer(tool) {
   buildScene(tool);
   onResize();
   renderer.setAnimationLoop(animate);
+
+  // Show the drag hint briefly, then fade it out so it never blocks hotspots.
+  const hint = $("#hint");
+  hint.classList.remove("hint-hidden");
+  clearTimeout(hintTimer);
+  hintTimer = setTimeout(() => hint.classList.add("hint-hidden"), 4000);
 
   setupVRButton();
 }
@@ -968,8 +1046,8 @@ function setupVRButton() {
 
   navigator.xr.isSessionSupported("immersive-vr").then(supported => {
     btn.disabled = !supported;
-    if (!supported) btn.textContent = "VR not available";
-  }).catch(() => { btn.textContent = "VR not available"; });
+    if (!supported) btn.style.display = "none";
+  }).catch(() => { btn.style.display = "none"; });
 
   btn.addEventListener("click", async () => {
     if (xrSession) { xrSession.end(); return; }
@@ -995,6 +1073,9 @@ function stopViewer() {
 }
 
 $("#reset-view").addEventListener("click", () => { if (toolPivot) { toolPivot.rotation.set(0, 0, 0); } });
+
+// Render whatever route the page was opened on (supports deep links straight to a tool).
+renderRoute();
 
 </script>
 </body>
