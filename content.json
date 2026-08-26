@@ -1,0 +1,525 @@
+{
+  "schemaVersion": 1,
+  "updated": "2026-08-26T22:38:21.775Z",
+  "updatedBy": "initial import",
+  "trades": [
+    {
+      "id": "plumbing",
+      "name": "Plumbing",
+      "icon": "🔧",
+      "tagline": "Keeping water, waste and gas systems flowing safely.",
+      "chipBg": "#e7eefc",
+      "mockup": false,
+      "archived": false,
+      "tools": [
+        {
+          "id": "pipe-wrench",
+          "name": "Pipe Wrench",
+          "icon": "🔧",
+          "short": "Grips and turns round pipe and fittings without crushing them.",
+          "what": "A pipe wrench has serrated, self-tightening jaws — one fixed hook jaw and one adjustable jaw set with a knurled nut. The more force you apply, the harder the jaws bite into the pipe.",
+          "usage": "Plumbers use it to grip and turn round pipe and fittings without crushing or slipping — essential for assembling or removing threaded steel and iron pipework.",
+          "model": "pipeWrench",
+          "photo": {
+            "src": "media/tools/pipe-wrench.jpg",
+            "w": 464,
+            "h": 695
+          },
+          "video": {
+            "youtube": "IwqlSQ3iu1o",
+            "file": ""
+          },
+          "parts": [
+            {
+              "label": "Hook jaw",
+              "body": "The fixed, curved jaw. It hooks onto the pipe while the adjustable jaw clamps from the other side.",
+              "x": 12,
+              "y": 26,
+              "pos": [
+                0,
+                0.3,
+                0.09
+              ]
+            },
+            {
+              "label": "Adjusting nut",
+              "body": "A knurled nut that winds the lower jaw up or down, setting the size of the bite for different pipe diameters.",
+              "x": 36,
+              "y": 48,
+              "pos": [
+                0.12,
+                0.02,
+                0.05
+              ]
+            },
+            {
+              "label": "Handle",
+              "body": "A long handle gives leverage — the harder you pull, the tighter the serrated jaws grip the pipe.",
+              "x": 71,
+              "y": 67,
+              "pos": [
+                0,
+                -0.55,
+                0.06
+              ]
+            }
+          ],
+          "quiz": [
+            {
+              "q": "What makes a pipe wrench different from a normal spanner?",
+              "options": [
+                "It has smooth jaws for delicate work",
+                "Its serrated jaws bite harder under load",
+                "It only fits square nuts",
+                "It has no adjustable parts"
+              ],
+              "correct": 1
+            },
+            {
+              "q": "What is a pipe wrench mainly designed to grip?",
+              "options": [
+                "Round pipe and fittings",
+                "Flat sheet metal",
+                "Electrical cable",
+                "Glass tubing"
+              ],
+              "correct": 0
+            },
+            {
+              "q": "What adjusts the size of a pipe wrench's jaw opening?",
+              "options": [
+                "A trigger",
+                "A knurled adjusting nut",
+                "A magnet",
+                "A foot pedal"
+              ],
+              "correct": 1
+            }
+          ],
+          "archived": false
+        },
+        {
+          "id": "adjustable-spanner",
+          "name": "Adjustable Spanner",
+          "icon": "🔩",
+          "short": "One tool, many sizes — a moving jaw set by a worm screw.",
+          "what": "An adjustable spanner (wrench) has one fixed jaw and one moving jaw, set by turning a worm screw. That lets a single tool fit many different nut and bolt sizes.",
+          "usage": "Plumbers reach for it on compression fittings, tap connectors and nuts where an exact-size spanner isn't to hand — a genuine multi-size tool for the toolbox.",
+          "model": "adjustableSpanner",
+          "photo": null,
+          "video": {
+            "youtube": "M35hY7uBhLY",
+            "file": ""
+          },
+          "parts": [
+            {
+              "label": "Jaws",
+              "body": "One jaw is fixed to the head, the other slides to grip nuts and fittings of different widths.",
+              "x": null,
+              "y": null,
+              "pos": [
+                0,
+                0.2,
+                0.06
+              ]
+            },
+            {
+              "label": "Worm screw",
+              "body": "Turning this knurled wheel moves the sliding jaw in or out to fit the fitting exactly.",
+              "x": null,
+              "y": null,
+              "pos": [
+                0,
+                -0.02,
+                0.05
+              ]
+            },
+            {
+              "label": "Handle",
+              "body": "A flat steel handle that gives good leverage for turning nuts and fittings.",
+              "x": null,
+              "y": null,
+              "pos": [
+                0,
+                -0.5,
+                0.05
+              ]
+            }
+          ],
+          "quiz": [
+            {
+              "q": "What lets an adjustable spanner fit different sized nuts?",
+              "options": [
+                "A hinge",
+                "A worm screw that moves one jaw",
+                "A spring clip",
+                "Magnets"
+              ],
+              "correct": 1
+            },
+            {
+              "q": "To avoid rounding off a nut, which way should you pull?",
+              "options": [
+                "Push away from you",
+                "Pull toward you so the fixed jaw takes the load",
+                "Twist side to side",
+                "Direction doesn't matter"
+              ],
+              "correct": 1
+            },
+            {
+              "q": "Adjustable spanners are especially useful for:",
+              "options": [
+                "Tasks needing one exact fixed size only",
+                "A range of nut and bolt sizes on the job",
+                "Cutting pipe",
+                "Testing voltage"
+              ],
+              "correct": 1
+            }
+          ],
+          "archived": false
+        },
+        {
+          "id": "plunger",
+          "name": "Plunger",
+          "icon": "🪠",
+          "short": "A sealed rubber cup that forces pressure through a blocked pipe.",
+          "what": "A plunger uses a flexible rubber cup to form a seal, then pushes and pulls water to force air and pressure through a pipe and shift a blockage.",
+          "usage": "Plumbers use it as the first, simplest tool for clearing blocked toilets, sinks and drains before reaching for rods, augers or chemical cleaners.",
+          "model": "plunger",
+          "photo": null,
+          "video": {
+            "youtube": "gIMyxQ8AB6o",
+            "file": ""
+          },
+          "parts": [
+            {
+              "label": "Rubber cup",
+              "body": "The flexible cup forms an airtight seal over the drain opening so pressure can build up.",
+              "x": null,
+              "y": null,
+              "pos": [
+                0,
+                -0.15,
+                0.19
+              ]
+            },
+            {
+              "label": "Handle",
+              "body": "A long handle lets you pump the cup up and down with steady, controlled force.",
+              "x": null,
+              "y": null,
+              "pos": [
+                0,
+                0.45,
+                0.04
+              ]
+            },
+            {
+              "label": "Ferrule",
+              "body": "The metal collar joining handle to cup, keeping the two firmly fixed together.",
+              "x": null,
+              "y": null,
+              "pos": [
+                0,
+                0.05,
+                0.05
+              ]
+            }
+          ],
+          "quiz": [
+            {
+              "q": "What does a plunger rely on to clear a blockage?",
+              "options": [
+                "Suction cutting through the clog",
+                "A sealed cup pushing air/water pressure through the pipe",
+                "Heat",
+                "Electric current"
+              ],
+              "correct": 1
+            },
+            {
+              "q": "What is essential for a plunger to work well?",
+              "options": [
+                "A good seal over the opening",
+                "A completely dry drain",
+                "Removing the toilet first",
+                "A magnet"
+              ],
+              "correct": 0
+            },
+            {
+              "q": "A plunger is typically:",
+              "options": [
+                "The last resort after cutting the pipe",
+                "The first, simplest tool to try on a blockage",
+                "Only used for testing water pressure",
+                "Never used by professionals"
+              ],
+              "correct": 1
+            }
+          ],
+          "archived": false
+        }
+      ]
+    },
+    {
+      "id": "electrical",
+      "name": "Electrical Installation",
+      "icon": "⚡",
+      "tagline": "Wiring, testing and maintaining safe electrical systems.",
+      "chipBg": "#fff3d6",
+      "mockup": true,
+      "archived": false,
+      "tools": [
+        {
+          "id": "wire-strippers",
+          "name": "Wire Strippers",
+          "icon": "✂️",
+          "short": "Shaped notches cut insulation without nicking the copper.",
+          "what": "Wire strippers have shaped notches sized to different cable diameters, gripping and cutting through insulation without nicking the copper conductor underneath.",
+          "usage": "Electricians use them to remove an exact length of insulation before connecting or terminating a cable — a clean strip makes for a safer, more reliable connection.",
+          "model": "wireStrippers",
+          "photo": null,
+          "video": {
+            "youtube": "fDo-KbKRd4A",
+            "file": ""
+          },
+          "parts": [
+            {
+              "label": "Notched jaws",
+              "body": "Graduated notches match common cable sizes, cutting the insulation cleanly without damaging the wire.",
+              "x": null,
+              "y": null,
+              "pos": [
+                0,
+                0.3,
+                0.06
+              ]
+            },
+            {
+              "label": "Pivot",
+              "body": "The pivot point lets the two handles scissor together to close the jaws with force.",
+              "x": null,
+              "y": null,
+              "pos": [
+                0,
+                0,
+                0.06
+              ]
+            },
+            {
+              "label": "Handle grips",
+              "body": "Moulded grips give a comfortable, secure hold for repeated stripping and cutting.",
+              "x": null,
+              "y": null,
+              "pos": [
+                0,
+                -0.4,
+                0.06
+              ]
+            }
+          ],
+          "quiz": [
+            {
+              "q": "What are wire strippers designed to avoid damaging?",
+              "options": [
+                "The cable insulation only",
+                "The copper conductor inside",
+                "The wall socket",
+                "The plug top"
+              ],
+              "correct": 1
+            },
+            {
+              "q": "Why does a clean, precise strip matter?",
+              "options": [
+                "It looks tidy, nothing more",
+                "For a safe, reliable electrical connection",
+                "It voids the warranty otherwise",
+                "It has no real purpose"
+              ],
+              "correct": 1
+            },
+            {
+              "q": "Wire strippers are mainly used before:",
+              "options": [
+                "Painting a wall",
+                "Connecting or terminating a cable",
+                "Testing water pressure",
+                "Cutting pipe threads"
+              ],
+              "correct": 1
+            }
+          ],
+          "archived": false
+        },
+        {
+          "id": "multimeter",
+          "name": "Multimeter",
+          "icon": "📟",
+          "short": "Measures voltage, current and resistance in a circuit.",
+          "what": "A multimeter measures voltage, current and resistance, letting you test whether a circuit is live, broken, or working correctly.",
+          "usage": "Electricians use it constantly — to prove a circuit is dead before working on it, diagnose faults, and check the continuity of wiring.",
+          "model": "multimeter",
+          "photo": null,
+          "video": {
+            "youtube": "hgTgx_h5QOk",
+            "file": ""
+          },
+          "parts": [
+            {
+              "label": "Display",
+              "body": "Shows the live reading — volts, amps, ohms or continuity, depending on the dial setting.",
+              "x": null,
+              "y": null,
+              "pos": [
+                0,
+                0.16,
+                0.05
+              ]
+            },
+            {
+              "label": "Selector dial",
+              "body": "Chooses what you're measuring: AC/DC voltage, current, resistance or continuity.",
+              "x": null,
+              "y": null,
+              "pos": [
+                0,
+                -0.06,
+                0.05
+              ]
+            },
+            {
+              "label": "Test probes",
+              "body": "Red (positive) and black (negative) leads touch the circuit to take a reading.",
+              "x": null,
+              "y": null,
+              "pos": [
+                0,
+                -0.38,
+                0.05
+              ]
+            }
+          ],
+          "quiz": [
+            {
+              "q": "Which of these can a multimeter measure?",
+              "options": [
+                "Voltage, current and resistance",
+                "Only temperature",
+                "Only water flow",
+                "Only distance"
+              ],
+              "correct": 0
+            },
+            {
+              "q": "Why test with a multimeter before working on a circuit?",
+              "options": [
+                "To measure paint thickness",
+                "To prove the circuit is safely dead",
+                "To time the job",
+                "To weigh a component"
+              ],
+              "correct": 1
+            },
+            {
+              "q": "Testing \"continuity\" tells you:",
+              "options": [
+                "Whether a wire path is complete and unbroken",
+                "The colour of a cable",
+                "The cost of a fault",
+                "The building's total power use"
+              ],
+              "correct": 0
+            }
+          ],
+          "archived": false
+        },
+        {
+          "id": "insulated-screwdriver",
+          "name": "Insulated Screwdriver",
+          "icon": "🪛",
+          "short": "VDE-rated insulation protects against shock near live parts.",
+          "what": "An insulated screwdriver is rated (commonly VDE 1000V) with insulation built into the handle and shaft to protect against electric shock when working near live parts.",
+          "usage": "Electricians use VDE-rated tools whenever there's a risk of contact with a live conductor — extra protection layered on top of safe isolation procedures, never a replacement for them.",
+          "model": "screwdriver",
+          "photo": null,
+          "video": {
+            "youtube": "0IOukPkvOtc",
+            "file": ""
+          },
+          "parts": [
+            {
+              "label": "Insulated handle",
+              "body": "Moulded, tested insulation rated to a specific voltage (commonly 1000V) — the tool's main safety feature.",
+              "x": null,
+              "y": null,
+              "pos": [
+                0,
+                0.24,
+                0.04
+              ]
+            },
+            {
+              "label": "Insulated shaft",
+              "body": "Unlike a standard screwdriver, the metal shaft itself is coated in insulation, right up to the tip.",
+              "x": null,
+              "y": null,
+              "pos": [
+                0,
+                -0.12,
+                0.02
+              ]
+            },
+            {
+              "label": "Tip",
+              "body": "Only the very tip is bare metal, sized to fit the screw head precisely and avoid slipping.",
+              "x": null,
+              "y": null,
+              "pos": [
+                0,
+                -0.48,
+                0.02
+              ]
+            }
+          ],
+          "quiz": [
+            {
+              "q": "What does \"VDE rated\" mean for a screwdriver?",
+              "options": [
+                "It's tested and insulated for use near live electrical parts",
+                "It's just a colour standard",
+                "It means it's magnetic",
+                "It means it's extra long"
+              ],
+              "correct": 0
+            },
+            {
+              "q": "Insulated tools are used:",
+              "options": [
+                "Instead of switching off the power",
+                "As extra protection alongside safe isolation",
+                "Only for plumbing work",
+                "Only for show"
+              ],
+              "correct": 1
+            },
+            {
+              "q": "What should you check before using one?",
+              "options": [
+                "The handle colour matches your van",
+                "The insulation isn't damaged or worn",
+                "It's the most expensive one available",
+                "Nothing — they're always safe"
+              ],
+              "correct": 1
+            }
+          ],
+          "archived": false
+        }
+      ]
+    }
+  ]
+}

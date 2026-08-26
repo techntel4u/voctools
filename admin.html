@@ -1,0 +1,1133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ForgeXR Admin — City of Wolverhampton College</title>
+<link rel="icon" href="https://www.wolvcoll.ac.uk/wp-content/uploads/2024/10/Siteicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --purple:#4B1942; --purple-deep:#2E0F29; --gold:#C9A227; --gold-light:#E4C65A;
+    --bg:#F2F4F7; --panel:#fff; --ink:#221B2E; --ink-soft:#5A5266; --line:rgba(0,0,0,.10);
+    --ok:#2E8B57; --bad:#C0392B; --warn:#B8860B; --radius:14px;
+  }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; height:100%; background:var(--bg); color:var(--ink);
+    font-family:'Inter',system-ui,sans-serif; -webkit-font-smoothing:antialiased; }
+  h1,h2,h3,h4{ font-family:'Poppins',system-ui,sans-serif; margin:0; }
+  button,input,textarea,select{ font-family:inherit; font-size:inherit; }
+  button{ cursor:pointer; }
+  a{ color:var(--purple); }
+
+  /* ---------- Lock screen ---------- */
+  #lock{ position:fixed; inset:0; z-index:100; display:flex; align-items:center; justify-content:center;
+    background:linear-gradient(150deg,var(--purple-deep),var(--purple)); padding:20px; }
+  #lock .card{ background:#fff; border-radius:20px; padding:34px 32px; width:100%; max-width:400px;
+    box-shadow:0 30px 60px rgba(0,0,0,.35); text-align:center; }
+  #lock h1{ font-size:24px; margin-bottom:4px; }
+  #lock h1 span{ color:var(--purple); }
+  #lock p{ color:var(--ink-soft); font-size:13.5px; line-height:1.55; margin:8px 0 20px; }
+  #lock input{ width:100%; padding:13px 15px; border:1.5px solid var(--line); border-radius:11px; }
+  #lock button{ width:100%; margin-top:12px; padding:13px; border:none; border-radius:999px;
+    background:var(--purple); color:#fff; font-weight:700; }
+  #lockErr{ color:var(--bad); font-size:13px; min-height:18px; margin-top:10px; font-weight:600; }
+
+  /* ---------- Shell ---------- */
+  #shell{ display:none; height:100%; flex-direction:column; }
+  header{ background:linear-gradient(180deg,var(--purple),#3d1536); color:#fff; padding:0 18px;
+    height:60px; display:flex; align-items:center; gap:14px; flex:0 0 auto; }
+  header .brand{ font-weight:800; font-size:17px; }
+  header .brand span{ color:var(--gold-light); }
+  header .tag{ font-size:11px; letter-spacing:1.2px; text-transform:uppercase; background:rgba(255,255,255,.15);
+    padding:4px 9px; border-radius:999px; }
+  header .spacer{ flex:1; }
+  .hbtn{ background:rgba(255,255,255,.14); border:1px solid rgba(255,255,255,.3); color:#fff;
+    padding:8px 14px; border-radius:999px; font-weight:600; font-size:13px; }
+  .hbtn:hover{ background:rgba(255,255,255,.24); }
+  .hbtn.primary{ background:var(--gold); border-color:var(--gold); color:#3a2c05; font-weight:800; }
+  .hbtn.primary:hover{ background:var(--gold-light); }
+  #dirtyDot{ display:none; width:8px; height:8px; border-radius:50%; background:var(--gold); }
+
+  #main{ flex:1; display:flex; min-height:0; }
+  #sidebar{ width:290px; flex:0 0 290px; background:#fff; border-right:1px solid var(--line);
+    overflow-y:auto; padding:14px 12px 30px; }
+  #editor{ flex:1; overflow-y:auto; padding:22px 26px 60px; min-width:0; }
+
+  .side-head{ display:flex; align-items:center; justify-content:space-between; margin:6px 4px 8px; }
+  .side-head h4{ font-size:12px; letter-spacing:1px; text-transform:uppercase; color:var(--ink-soft); }
+  .mini{ background:rgba(75,25,66,.08); border:none; color:var(--purple); font-weight:700; font-size:12px;
+    padding:5px 10px; border-radius:999px; }
+  .mini:hover{ background:rgba(75,25,66,.16); }
+
+  .trade-block{ margin-bottom:10px; border:1px solid var(--line); border-radius:12px; overflow:hidden; }
+  .trade-row{ display:flex; align-items:center; gap:8px; padding:9px 10px; background:#faf7fa; }
+  .trade-row .name{ font-weight:700; font-size:14px; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .trade-row.is-open{ background:#f1e7f0; }
+  .tool-row{ display:flex; align-items:center; gap:8px; padding:8px 10px 8px 16px; border-top:1px solid var(--line);
+    background:#fff; font-size:13.5px; }
+  .tool-row .name{ flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .tool-row.sel{ background:#f1e7f0; font-weight:700; }
+  .tool-row.archived .name, .trade-row.archived .name{ opacity:.5; text-decoration:line-through; }
+  .row-btn{ background:none; border:none; color:var(--ink-soft); font-size:13px; padding:2px 4px; border-radius:6px; }
+  .row-btn:hover{ background:rgba(0,0,0,.07); color:var(--ink); }
+  .clickable{ cursor:pointer; flex:1; display:flex; align-items:center; gap:8px; min-width:0; }
+  .dragging{ opacity:.4; }
+  .drop-target{ outline:2px dashed var(--purple); outline-offset:-2px; }
+
+  /* ---------- Editor ---------- */
+  .empty{ color:var(--ink-soft); text-align:center; padding:70px 20px; }
+  .empty h2{ font-size:20px; margin-bottom:8px; color:var(--ink); }
+  .card{ background:var(--panel); border:1px solid var(--line); border-radius:var(--radius);
+    padding:20px 20px 22px; margin-bottom:18px; }
+  .card > h3{ font-size:16px; margin-bottom:3px; }
+  .card > .hint{ color:var(--ink-soft); font-size:12.5px; margin:0 0 14px; line-height:1.5; }
+  .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .field{ margin-bottom:13px; }
+  .field:last-child{ margin-bottom:0; }
+  label{ display:block; font-size:12.5px; font-weight:700; margin-bottom:5px; color:var(--ink); }
+  label .opt{ font-weight:500; color:var(--ink-soft); }
+  input[type=text], textarea, select{
+    width:100%; padding:10px 12px; border:1.5px solid var(--line); border-radius:10px; background:#fff; color:var(--ink);
+  }
+  input[type=text]:focus, textarea:focus, select:focus{ outline:none; border-color:var(--purple); }
+  textarea{ min-height:78px; resize:vertical; line-height:1.5; }
+  .charcount{ font-size:11.5px; color:var(--ink-soft); margin-top:3px; }
+  .inline{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+  .btn{ background:var(--purple); color:#fff; border:none; padding:10px 18px; border-radius:999px; font-weight:700; font-size:13.5px; }
+  .btn.ghost{ background:rgba(75,25,66,.08); color:var(--purple); }
+  .btn.danger{ background:rgba(192,57,43,.1); color:var(--bad); }
+  .btn.danger:hover{ background:rgba(192,57,43,.2); }
+  .btn:disabled{ opacity:.45; cursor:default; }
+  .pill{ font-size:11.5px; font-weight:700; padding:3px 9px; border-radius:999px; }
+  .pill.ok{ background:rgba(46,139,87,.12); color:var(--ok); }
+  .pill.warn{ background:rgba(184,134,11,.14); color:var(--warn); }
+  .pill.bad{ background:rgba(192,57,43,.12); color:var(--bad); }
+
+  /* Photo + hotspot placement */
+  .photo-stage{ position:relative; display:inline-block; max-width:100%; border-radius:12px; overflow:hidden;
+    border:1px solid var(--line); background:#f6f2f5; }
+  .photo-stage img{ display:block; max-width:100%; max-height:420px; }
+  .photo-stage.arming{ cursor:crosshair; box-shadow:0 0 0 3px var(--gold); }
+  .hs{ position:absolute; width:30px; height:30px; margin:-15px 0 0 -15px; border-radius:50%;
+    background:var(--purple); color:#fff; font-weight:800; font-size:13px; display:flex; align-items:center;
+    justify-content:center; border:2.5px solid #fff; box-shadow:0 2px 8px rgba(0,0,0,.4); cursor:grab; }
+  .hs.active{ background:var(--gold); color:#3a2c05; }
+  .no-photo{ padding:36px 20px; text-align:center; color:var(--ink-soft); border:1.5px dashed var(--line);
+    border-radius:12px; font-size:13.5px; }
+
+  .part{ border:1px solid var(--line); border-radius:12px; padding:14px; margin-bottom:12px; background:#fbf9fb; }
+  .part-head{ display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+  .part-num{ width:26px; height:26px; border-radius:50%; background:var(--purple); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-weight:800; font-size:12.5px; }
+  .part-head .grow{ flex:1; }
+
+  .q{ border:1px solid var(--line); border-radius:12px; padding:14px; margin-bottom:12px; background:#fbf9fb; }
+  .opt-row{ display:flex; align-items:center; gap:9px; margin-bottom:7px; }
+  .opt-row input[type=text]{ flex:1; }
+  .opt-row label{ margin:0; font-size:12px; color:var(--ink-soft); white-space:nowrap; display:flex; align-items:center; gap:5px; }
+
+  /* Modal */
+  .veil{ position:fixed; inset:0; background:rgba(20,10,20,.55); display:flex; align-items:center;
+    justify-content:center; z-index:90; padding:20px; }
+  .modal{ background:#fff; border-radius:18px; max-width:560px; width:100%; max-height:86vh; overflow-y:auto;
+    padding:24px; box-shadow:0 30px 60px rgba(0,0,0,.4); }
+  .modal h3{ font-size:19px; margin-bottom:6px; }
+  .modal p{ color:var(--ink-soft); font-size:13.5px; line-height:1.6; }
+  .modal .actions{ display:flex; justify-content:flex-end; gap:10px; margin-top:18px; }
+  .log{ font-family:ui-monospace,Menlo,Consolas,monospace; font-size:12px; background:#f6f2f5;
+    border-radius:10px; padding:12px; max-height:230px; overflow:auto; white-space:pre-wrap; line-height:1.55; }
+  .issue{ font-size:13px; padding:8px 10px; border-radius:9px; margin-bottom:6px; }
+  .issue.err{ background:rgba(192,57,43,.1); color:#8c2c22; }
+  .issue.warn{ background:rgba(184,134,11,.12); color:#7a5c07; }
+
+  #toast{ position:fixed; bottom:22px; left:50%; transform:translateX(-50%); background:var(--ink);
+    color:#fff; padding:11px 20px; border-radius:999px; font-size:13.5px; font-weight:600; z-index:120;
+    opacity:0; pointer-events:none; transition:opacity .25s; }
+  #toast.show{ opacity:1; }
+
+  @media (max-width:820px){
+    #main{ flex-direction:column; }
+    #sidebar{ width:auto; flex:0 0 auto; max-height:38vh; border-right:none; border-bottom:1px solid var(--line); }
+    .grid2{ grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ================= LOCK ================= -->
+<div id="lock">
+  <div class="card">
+    <h1>Forge<span>XR</span> Admin</h1>
+    <p>Manage the trades, tools and quizzes that students see.</p>
+    <input id="pw" type="password" placeholder="Admin password" autocomplete="current-password">
+    <button id="unlock">Unlock</button>
+    <div id="lockErr"></div>
+  </div>
+</div>
+
+<!-- ================= SHELL ================= -->
+<div id="shell">
+  <header>
+    <div class="brand">Forge<span>XR</span></div>
+    <div class="tag">Admin</div>
+    <span id="dirtyDot" title="Unsaved changes"></span>
+    <span id="statusText" style="font-size:12.5px;opacity:.85"></span>
+    <div class="spacer"></div>
+    <button class="hbtn" id="previewBtn">Preview</button>
+    <button class="hbtn" id="backupBtn">Backup</button>
+    <button class="hbtn" id="settingsBtn">Settings</button>
+    <button class="hbtn primary" id="publishBtn">Publish</button>
+  </header>
+
+  <div id="main">
+    <aside id="sidebar">
+      <div class="side-head">
+        <h4>Trades &amp; tools</h4>
+        <button class="mini" id="addTrade">+ Trade</button>
+      </div>
+      <div id="tree"></div>
+    </aside>
+    <section id="editor"></section>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* =====================================================================
+   ForgeXR admin portal
+
+   Content is held in content.json in this repository. The portal edits a
+   working copy in the browser and publishes it back as a git commit, so
+   every change is versioned and nothing is ever silently lost.
+
+   Note on the password below: this is a static site, so the password is a
+   gate against casual access, not a security control — anyone can read the
+   page source. That is acceptable because the content is public by design.
+   Write access is what actually matters, and that is protected by your
+   GitHub token, which never leaves your browser.
+
+   To change the password, generate a SHA-256 hash of the new one and paste
+   it here. In a terminal:
+       printf '%s' 'your new password' | shasum -a 256
+   ===================================================================== */
+const PASSWORD_SHA256 = "d08ac217b96fa9274f27a18e35cd2bca7f2ab447dbc2e22701d59d38245a197b";
+/* Default password: CoWC-ForgeXR-2026 */
+
+const LS = {
+  draft: "forgexr.draft",
+  settings: "forgexr.settings",
+  preview: "forgexr.preview",
+  unlocked: "forgexr.unlocked"
+};
+
+const state = {
+  content: null,      // working copy
+  published: null,    // last known published copy, for change detection
+  sel: null,          // { tradeId, toolId }
+  dirty: false,
+  armedPart: null     // index of the part awaiting a click on the photo
+};
+
+const $ = s => document.querySelector(s);
+const el = (tag, cls, html) => { const n = document.createElement(tag); if (cls) n.className = cls; if (html !== undefined) n.innerHTML = html; return n; };
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+
+function toast(msg, ms = 2600) {
+  const t = $("#toast"); t.textContent = msg; t.classList.add("show");
+  clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove("show"), ms);
+}
+
+/* ---------------------------------------------------------------------
+   Staged media: uploads wait in IndexedDB until you publish, so an
+   accidental refresh does not lose a photo or video you just added.
+   --------------------------------------------------------------------- */
+const MediaStore = {
+  db: null,
+  open() {
+    if (this.db) return Promise.resolve(this.db);
+    return new Promise((res, rej) => {
+      const req = indexedDB.open("forgexr-media", 1);
+      req.onupgradeneeded = () => req.result.createObjectStore("files", { keyPath: "path" });
+      req.onsuccess = () => { this.db = req.result; res(this.db); };
+      req.onerror = () => rej(req.error);
+    });
+  },
+  async tx(mode) { const db = await this.open(); return db.transaction("files", mode).objectStore("files"); },
+  async put(path, blob) {
+    const store = await this.tx("readwrite");
+    return new Promise((res, rej) => { const r = store.put({ path, blob, added: Date.now() }); r.onsuccess = res; r.onerror = () => rej(r.error); });
+  },
+  async all() {
+    const store = await this.tx("readonly");
+    return new Promise((res, rej) => { const r = store.getAll(); r.onsuccess = () => res(r.result || []); r.onerror = () => rej(r.error); });
+  },
+  async get(path) {
+    const store = await this.tx("readonly");
+    return new Promise((res, rej) => { const r = store.get(path); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+  },
+  async remove(path) {
+    const store = await this.tx("readwrite");
+    return new Promise((res, rej) => { const r = store.delete(path); r.onsuccess = res; r.onerror = () => rej(r.error); });
+  },
+  async clear() {
+    const store = await this.tx("readwrite");
+    return new Promise((res, rej) => { const r = store.clear(); r.onsuccess = res; r.onerror = () => rej(r.error); });
+  }
+};
+
+/* ---------------------------------------------------------------------
+   Settings (GitHub target + token). The token is kept in this browser
+   only and is never written into the repository.
+   --------------------------------------------------------------------- */
+function settings() {
+  try { return JSON.parse(localStorage.getItem(LS.settings)) || {}; } catch { return {}; }
+}
+function saveSettings(s) { localStorage.setItem(LS.settings, JSON.stringify(s)); }
+
+function repoDefaults() {
+  const s = settings();
+  // Derive sensible defaults from the URL when hosted on GitHub Pages.
+  let owner = s.owner || "", repo = s.repo || "";
+  if ((!owner || !repo) && location.hostname.endsWith("github.io")) {
+    owner = owner || location.hostname.split(".")[0];
+    const seg = location.pathname.split("/").filter(Boolean)[0];
+    if (seg) repo = repo || seg;
+  }
+  return { owner, repo, branch: s.branch || "main", token: s.token || "" };
+}
+
+/* =====================================================================
+   Lock screen
+   ===================================================================== */
+async function sha256Hex(text) {
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+  return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, "0")).join("");
+}
+
+async function tryUnlock() {
+  const pw = $("#pw").value;
+  const hash = await sha256Hex(pw);
+  if (hash !== PASSWORD_SHA256) { $("#lockErr").textContent = "That password is not right."; return; }
+  sessionStorage.setItem(LS.unlocked, "1");
+  start();
+}
+
+$("#unlock").addEventListener("click", tryUnlock);
+$("#pw").addEventListener("keydown", e => { if (e.key === "Enter") tryUnlock(); });
+
+/* =====================================================================
+   Boot
+   ===================================================================== */
+async function start() {
+  $("#lock").style.display = "none";
+  $("#shell").style.display = "flex";
+
+  await loadPublished();
+
+  const draft = localStorage.getItem(LS.draft);
+  if (draft) {
+    try {
+      const parsed = JSON.parse(draft);
+      if (JSON.stringify(parsed.content) !== JSON.stringify(state.published)) {
+        const when = new Date(parsed.savedAt).toLocaleString();
+        if (confirm(`You have unpublished changes from ${when}.\n\nOK  = carry on with those changes\nCancel = discard them and start from what is published`)) {
+          state.content = parsed.content;
+          setDirty(true);
+        } else {
+          localStorage.removeItem(LS.draft);
+          await MediaStore.clear();
+        }
+      }
+    } catch { /* a corrupt draft is simply ignored */ }
+  }
+
+  if (!state.content) state.content = JSON.parse(JSON.stringify(state.published));
+  renderTree();
+  renderEditor();
+  refreshStatus();
+}
+
+async function loadPublished() {
+  try {
+    const res = await fetch("content.json", { cache: "no-store" });
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    state.published = await res.json();
+  } catch (err) {
+    state.published = { schemaVersion: 1, updated: null, trades: [] };
+    toast("Could not read content.json — starting an empty catalogue.", 4200);
+  }
+  normalise(state.published);
+}
+
+function normalise(c) {
+  c.schemaVersion = c.schemaVersion || 1;
+  c.trades = Array.isArray(c.trades) ? c.trades : [];
+  c.trades.forEach(t => {
+    t.tools = Array.isArray(t.tools) ? t.tools : [];
+    t.tools.forEach(tool => {
+      tool.parts = Array.isArray(tool.parts) ? tool.parts : [];
+      while (tool.parts.length < 3) tool.parts.push({ label: "", body: "", x: null, y: null, pos: null });
+      tool.quiz = Array.isArray(tool.quiz) ? tool.quiz : [];
+      while (tool.quiz.length < 3) tool.quiz.push({ q: "", options: ["", "", "", ""], correct: 0 });
+      tool.quiz.forEach(q => { while (q.options.length < 4) q.options.push(""); });
+      tool.video = tool.video || { youtube: "", file: "" };
+    });
+  });
+}
+
+function setDirty(v) {
+  state.dirty = v;
+  $("#dirtyDot").style.display = v ? "inline-block" : "none";
+  if (v) {
+    localStorage.setItem(LS.draft, JSON.stringify({ savedAt: Date.now(), content: state.content }));
+  }
+  refreshStatus();
+}
+
+async function refreshStatus() {
+  const staged = await MediaStore.all().catch(() => []);
+  const bits = [];
+  if (state.dirty) bits.push("unpublished changes");
+  if (staged.length) bits.push(staged.length + " file" + (staged.length === 1 ? "" : "s") + " to upload");
+  $("#statusText").textContent = bits.length ? bits.join(" · ") : "up to date";
+}
+
+window.addEventListener("beforeunload", e => {
+  if (state.dirty) { e.preventDefault(); e.returnValue = ""; }
+});
+
+/* =====================================================================
+   Sidebar tree
+   ===================================================================== */
+function slug(s) {
+  return String(s).toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "item";
+}
+function uniqueId(base, taken) {
+  let id = base, n = 2;
+  while (taken.includes(id)) id = base + "-" + n++;
+  return id;
+}
+
+function renderTree() {
+  const tree = $("#tree");
+  tree.innerHTML = "";
+  if (!state.content.trades.length) {
+    tree.appendChild(el("div", "no-photo", "No trades yet.<br>Use <b>+ Trade</b> to add one."));
+    return;
+  }
+  state.content.trades.forEach((trade, ti) => {
+    const block = el("div", "trade-block");
+    const open = state.sel && state.sel.tradeId === trade.id;
+    const row = el("div", "trade-row" + (open ? " is-open" : "") + (trade.archived ? " archived" : ""));
+
+    const click = el("div", "clickable");
+    click.innerHTML = `<span>${esc(trade.icon || "🛠️")}</span><span class="name">${esc(trade.name)}</span>`;
+    click.addEventListener("click", () => { state.sel = { tradeId: trade.id, toolId: null }; renderTree(); renderEditor(); });
+    row.appendChild(click);
+
+    row.appendChild(iconBtn("↑", "Move up", () => moveItem(state.content.trades, ti, -1)));
+    row.appendChild(iconBtn("↓", "Move down", () => moveItem(state.content.trades, ti, 1)));
+    row.appendChild(iconBtn("+", "Add a tool to this trade", () => addTool(trade)));
+    block.appendChild(row);
+
+    trade.tools.forEach((tool, si) => {
+      const sel = state.sel && state.sel.toolId === tool.id && state.sel.tradeId === trade.id;
+      const trow = el("div", "tool-row" + (sel ? " sel" : "") + (tool.archived ? " archived" : ""));
+      const c = el("div", "clickable");
+      c.innerHTML = `<span>${esc(tool.icon || "🔧")}</span><span class="name">${esc(tool.name)}</span>`;
+      c.addEventListener("click", () => { state.sel = { tradeId: trade.id, toolId: tool.id }; state.armedPart = null; renderTree(); renderEditor(); });
+      trow.appendChild(c);
+      trow.appendChild(iconBtn("↑", "Move up", () => moveItem(trade.tools, si, -1)));
+      trow.appendChild(iconBtn("↓", "Move down", () => moveItem(trade.tools, si, 1)));
+      block.appendChild(trow);
+    });
+
+    tree.appendChild(block);
+  });
+}
+
+function iconBtn(label, title, fn) {
+  const b = el("button", "row-btn", label);
+  b.title = title;
+  b.addEventListener("click", e => { e.stopPropagation(); fn(); });
+  return b;
+}
+
+function moveItem(arr, i, dir) {
+  const j = i + dir;
+  if (j < 0 || j >= arr.length) return;
+  const [item] = arr.splice(i, 1);
+  arr.splice(j, 0, item);
+  setDirty(true); renderTree();
+}
+
+$("#addTrade").addEventListener("click", () => {
+  const name = prompt("Name of the new trade (for example: Carpentry)");
+  if (!name) return;
+  const id = uniqueId(slug(name), state.content.trades.map(t => t.id));
+  state.content.trades.push({
+    id, name: name.trim(), icon: "🛠️", tagline: "", chipBg: "#efe6ee",
+    mockup: false, archived: false, tools: []
+  });
+  state.sel = { tradeId: id, toolId: null };
+  setDirty(true); renderTree(); renderEditor();
+});
+
+function addTool(trade) {
+  const name = prompt("Name of the new tool (for example: Basin Wrench)");
+  if (!name) return;
+  const id = uniqueId(slug(name), trade.tools.map(t => t.id));
+  const tool = {
+    id, name: name.trim(), icon: "🔧", short: "", what: "", usage: "",
+    model: null, photo: null, video: { youtube: "", file: "" },
+    parts: [0,1,2].map(() => ({ label: "", body: "", x: null, y: null, pos: null })),
+    quiz: [0,1,2].map(() => ({ q: "", options: ["", "", "", ""], correct: 0 })),
+    archived: false
+  };
+  trade.tools.push(tool);
+  state.sel = { tradeId: trade.id, toolId: id };
+  setDirty(true); renderTree(); renderEditor();
+}
+
+function currentTrade() { return state.sel && state.content.trades.find(t => t.id === state.sel.tradeId); }
+function currentTool() {
+  const t = currentTrade();
+  return t && state.sel.toolId ? t.tools.find(x => x.id === state.sel.toolId) : null;
+}
+
+/* =====================================================================
+   Editor
+   ===================================================================== */
+function renderEditor() {
+  const box = $("#editor");
+  box.innerHTML = "";
+  const trade = currentTrade();
+  if (!trade) {
+    box.appendChild(el("div", "empty", `
+      <h2>Nothing selected</h2>
+      <p>Pick a trade or a tool on the left, or add a new one.</p>`));
+    return;
+  }
+  const tool = currentTool();
+  if (tool) renderToolEditor(box, trade, tool);
+  else renderTradeEditor(box, trade);
+}
+
+function field(labelText, node, hint) {
+  const f = el("div", "field");
+  const l = el("label", null, labelText);
+  f.appendChild(l); f.appendChild(node);
+  if (hint) f.appendChild(el("div", "charcount", hint));
+  return f;
+}
+
+function textInput(value, oninput, placeholder) {
+  const i = el("input");
+  i.type = "text"; i.value = value || ""; if (placeholder) i.placeholder = placeholder;
+  i.addEventListener("input", () => { oninput(i.value); setDirty(true); });
+  return i;
+}
+
+function textArea(value, oninput, placeholder) {
+  const t = el("textarea");
+  t.value = value || ""; if (placeholder) t.placeholder = placeholder;
+  t.addEventListener("input", () => { oninput(t.value); setDirty(true); });
+  return t;
+}
+
+/* ---------------- Trade editor ---------------- */
+function renderTradeEditor(box, trade) {
+  const card = el("div", "card");
+  card.appendChild(el("h3", null, "Trade details"));
+  card.appendChild(el("p", "hint", "A trade is a group of tools, shown on the “Choose a trade” screen."));
+
+  const g = el("div", "grid2");
+  g.appendChild(field("Trade name", textInput(trade.name, v => { trade.name = v; renderTree(); })));
+  g.appendChild(field("Icon <span class='opt'>(one emoji)</span>", textInput(trade.icon, v => { trade.icon = v; renderTree(); }, "🛠️")));
+  card.appendChild(g);
+  card.appendChild(field("One-line description", textInput(trade.tagline, v => trade.tagline = v,
+    "Keeping water, waste and gas systems flowing safely.")));
+
+  const flags = el("div", "inline");
+  flags.appendChild(checkbox("Show a “Mock-up” badge", trade.mockup, v => { trade.mockup = v; }));
+  flags.appendChild(checkbox("Hide from students (archive)", trade.archived, v => { trade.archived = v; renderTree(); }));
+  card.appendChild(field("Options", flags));
+  box.appendChild(card);
+
+  const toolsCard = el("div", "card");
+  toolsCard.appendChild(el("h3", null, "Tools in this trade"));
+  toolsCard.appendChild(el("p", "hint", `${trade.tools.length} tool${trade.tools.length === 1 ? "" : "s"}. Use the arrows in the list on the left to change the order students see.`));
+  const addBtn = el("button", "btn", "+ Add a tool");
+  addBtn.addEventListener("click", () => addTool(trade));
+  toolsCard.appendChild(addBtn);
+  box.appendChild(toolsCard);
+
+  const danger = el("div", "card");
+  danger.appendChild(el("h3", null, "Remove this trade"));
+  danger.appendChild(el("p", "hint", "Archiving hides it from students but keeps everything. Deleting removes it and all of its tools from the next publish — earlier versions stay in the repository history."));
+  const del = el("button", "btn danger", "Delete trade permanently");
+  del.addEventListener("click", () => {
+    if (!confirm(`Delete “${trade.name}” and its ${trade.tools.length} tool(s)?\n\nThis will be removed when you next publish. Previous versions remain in the repository history.`)) return;
+    state.content.trades = state.content.trades.filter(t => t !== trade);
+    state.sel = null; setDirty(true); renderTree(); renderEditor();
+  });
+  danger.appendChild(del);
+  box.appendChild(danger);
+}
+
+function checkbox(labelText, checked, onchange) {
+  const wrap = el("label", null, "");
+  wrap.style.cssText = "display:flex;align-items:center;gap:7px;font-weight:600;margin:0";
+  const c = el("input"); c.type = "checkbox"; c.checked = !!checked;
+  c.addEventListener("change", () => { onchange(c.checked); setDirty(true); });
+  wrap.appendChild(c); wrap.appendChild(document.createTextNode(labelText));
+  return wrap;
+}
+
+/* ---------------- Tool editor ---------------- */
+function renderToolEditor(box, trade, tool) {
+  // --- Basics
+  const basics = el("div", "card");
+  basics.appendChild(el("h3", null, "Tool details"));
+  basics.appendChild(el("p", "hint", "How the tool appears in the list of tools for this trade."));
+  const g = el("div", "grid2");
+  g.appendChild(field("Tool name", textInput(tool.name, v => { tool.name = v; renderTree(); })));
+  g.appendChild(field("Icon <span class='opt'>(one emoji)</span>", textInput(tool.icon, v => { tool.icon = v; renderTree(); }, "🔧")));
+  basics.appendChild(g);
+  basics.appendChild(field("Short description <span class='opt'>(shown on the tool card)</span>",
+    textInput(tool.short, v => tool.short = v, "Grips and turns round pipe without crushing it.")));
+  basics.appendChild(field("Options", checkbox("Hide from students (archive)", tool.archived, v => { tool.archived = v; renderTree(); })));
+  box.appendChild(basics);
+
+  // --- What it is / how it's used
+  const learn = el("div", "card");
+  learn.appendChild(el("h3", null, "What students read"));
+  learn.appendChild(el("p", "hint", "These two appear in the tool menu as “What this tool is” and “How it's used in the trade”."));
+  learn.appendChild(field("What this tool is", textArea(tool.what, v => tool.what = v,
+    "Describe the tool in plain English — what it is and how it works.")));
+  learn.appendChild(field("How it's used in the trade", textArea(tool.usage, v => tool.usage = v,
+    "Where this tool fits on a real job.")));
+  box.appendChild(learn);
+
+  // --- Photo + parts
+  box.appendChild(photoCard(tool));
+  box.appendChild(partsCard(tool));
+
+  // --- Video
+  box.appendChild(videoCard(tool));
+
+  // --- Quiz
+  box.appendChild(quizCard(tool));
+
+  // --- Delete
+  const danger = el("div", "card");
+  danger.appendChild(el("h3", null, "Remove this tool"));
+  danger.appendChild(el("p", "hint", "Archiving hides it from students but keeps the content. Deleting removes it from the next publish; earlier versions remain in the repository history."));
+  const del = el("button", "btn danger", "Delete tool permanently");
+  del.addEventListener("click", () => {
+    if (!confirm(`Delete “${tool.name}”?\n\nThis will be removed when you next publish.`)) return;
+    trade.tools = trade.tools.filter(t => t !== tool);
+    state.sel = { tradeId: trade.id, toolId: null };
+    setDirty(true); renderTree(); renderEditor();
+  });
+  danger.appendChild(del);
+  box.appendChild(danger);
+}
+
+/* ---------------- Photo ---------------- */
+function photoCard(tool) {
+  const card = el("div", "card");
+  card.appendChild(el("h3", null, "Photo of the tool"));
+  card.appendChild(el("p", "hint", "Students see this photograph with numbered markers on it. A plain, uncluttered background works best. If there is no photo, the tool falls back to a simple 3D stand-in."));
+
+  const stage = el("div", "photo-stage");
+  const holder = el("div");
+
+  if (tool.photo && tool.photo.src) {
+    const img = el("img");
+    img.alt = "Photo of " + tool.name;
+    resolveMediaSrc(tool.photo.src).then(src => { img.src = src; });
+    img.addEventListener("load", () => {
+      tool.photo.w = img.naturalWidth; tool.photo.h = img.naturalHeight;
+      drawHotspots(stage, tool);
+    });
+    stage.appendChild(img);
+    stage.addEventListener("click", e => {
+      if (state.armedPart === null) return;
+      const r = stage.getBoundingClientRect();
+      const x = ((e.clientX - r.left) / r.width) * 100;
+      const y = ((e.clientY - r.top) / r.height) * 100;
+      tool.parts[state.armedPart].x = +x.toFixed(1);
+      tool.parts[state.armedPart].y = +y.toFixed(1);
+      state.armedPart = null;
+      setDirty(true); renderEditor();
+    });
+    holder.appendChild(stage);
+  } else {
+    holder.appendChild(el("div", "no-photo", "No photo yet — upload one below."));
+  }
+  card.appendChild(holder);
+
+  const row = el("div", "inline");
+  row.style.marginTop = "14px";
+  const up = el("button", "btn", tool.photo && tool.photo.src ? "Replace photo" : "Upload photo");
+  up.addEventListener("click", () => pickFile("image/*", async file => {
+    if (file.size > 8 * 1024 * 1024) { if (!confirm(`That image is ${(file.size/1048576).toFixed(1)} MB. Large images slow the first load. Use it anyway?`)) return; }
+    const path = `media/tools/${tool.id}.${extFor(file)}`;
+    await MediaStore.put(path, file);
+    tool.photo = { src: path, w: 0, h: 0 };
+    setDirty(true); renderEditor(); toast("Photo staged — press Publish to save it.");
+  }));
+  row.appendChild(up);
+
+  if (tool.photo && tool.photo.src) {
+    const rm = el("button", "btn ghost", "Remove photo");
+    rm.addEventListener("click", () => {
+      if (!confirm("Remove the photo from this tool?")) return;
+      tool.photo = null; tool.parts.forEach(p => { p.x = null; p.y = null; });
+      setDirty(true); renderEditor();
+    });
+    row.appendChild(rm);
+    row.appendChild(el("span", "charcount", esc(tool.photo.src)));
+  }
+  card.appendChild(row);
+  return card;
+}
+
+function drawHotspots(stage, tool) {
+  stage.querySelectorAll(".hs").forEach(n => n.remove());
+  tool.parts.forEach((p, i) => {
+    if (p.x === null || p.y === null || !p.label) return;
+    const dot = el("div", "hs" + (state.armedPart === i ? " active" : ""), String(i + 1));
+    dot.style.left = p.x + "%"; dot.style.top = p.y + "%";
+    dot.title = p.label + " — drag to move";
+    dot.draggable = false;
+    let moving = false;
+    dot.addEventListener("pointerdown", e => { moving = true; dot.setPointerCapture(e.pointerId); e.stopPropagation(); });
+    dot.addEventListener("pointermove", e => {
+      if (!moving) return;
+      const r = stage.getBoundingClientRect();
+      p.x = +Math.max(0, Math.min(100, ((e.clientX - r.left) / r.width) * 100)).toFixed(1);
+      p.y = +Math.max(0, Math.min(100, ((e.clientY - r.top) / r.height) * 100)).toFixed(1);
+      dot.style.left = p.x + "%"; dot.style.top = p.y + "%";
+    });
+    dot.addEventListener("pointerup", e => {
+      if (!moving) return;
+      moving = false; dot.releasePointerCapture(e.pointerId); setDirty(true);
+      const f = document.querySelector(`[data-coord="${i}"]`);
+      if (f) f.textContent = coordLabel(p);
+    });
+    stage.appendChild(dot);
+  });
+}
+
+function coordLabel(p) {
+  return (p.x === null || p.y === null) ? "not placed on the photo yet" : `at ${p.x}% across, ${p.y}% down`;
+}
+
+/* ---------------- Parts ---------------- */
+function partsCard(tool) {
+  const card = el("div", "card");
+  card.appendChild(el("h3", null, "Parts of the tool"));
+  card.appendChild(el("p", "hint", "Three parts per tool. Each becomes a numbered marker on the photo and a row in the student menu. Press <b>Place on photo</b> then click the photo above, or drag a marker to fine-tune it."));
+
+  tool.parts.forEach((p, i) => {
+    const wrap = el("div", "part");
+    const head = el("div", "part-head");
+    head.appendChild(el("div", "part-num", String(i + 1)));
+    head.appendChild(el("div", "grow", `<b>Part ${i + 1}</b>`));
+    if (tool.photo && tool.photo.src) {
+      const place = el("button", "btn ghost", state.armedPart === i ? "Now click the photo…" : "Place on photo");
+      place.addEventListener("click", () => {
+        state.armedPart = state.armedPart === i ? null : i;
+        renderEditor();
+        if (state.armedPart !== null) {
+          // The photo is usually scrolled out of sight by the time you press
+          // this, so bring it into view rather than asking for a click on
+          // something the editor cannot see.
+          const stage = document.querySelector(".photo-stage");
+          if (stage) stage.scrollIntoView({ behavior: "smooth", block: "center" });
+          toast("Now click the spot on the photo.");
+        }
+      });
+      head.appendChild(place);
+    }
+    head.appendChild(iconBtn("↑", "Move up", () => { moveItem(tool.parts, i, -1); renderEditor(); }));
+    head.appendChild(iconBtn("↓", "Move down", () => { moveItem(tool.parts, i, 1); renderEditor(); }));
+    wrap.appendChild(head);
+
+    wrap.appendChild(field("Name of the part", textInput(p.label, v => { p.label = v; }, "Hook jaw")));
+    wrap.appendChild(field("What it does", textArea(p.body, v => { p.body = v; }, "Explain this part in a sentence or two.")));
+    const coord = el("div", "charcount", coordLabel(p));
+    coord.dataset.coord = String(i);
+    wrap.appendChild(coord);
+    card.appendChild(wrap);
+  });
+
+  if (state.armedPart !== null) {
+    const stage = document.querySelector(".photo-stage");
+    if (stage) stage.classList.add("arming");
+  }
+  const stage2 = document.querySelector(".photo-stage");
+  if (stage2) drawHotspots(stage2, tool);
+  return card;
+}
+
+/* ---------------- Video ---------------- */
+function videoCard(tool) {
+  const card = el("div", "card");
+  card.appendChild(el("h3", null, "Video"));
+  card.appendChild(el("p", "hint", "A YouTube link plays on phones, tablets and computers. <b>Inside a VR headset only an uploaded file can play</b> — a YouTube player cannot be shown in 3D. Add both for the best experience everywhere."));
+
+  const yt = textInput(tool.video.youtube, v => {
+    tool.video.youtube = extractYouTubeId(v) || v.trim();
+  }, "https://www.youtube.com/watch?v=…");
+  yt.addEventListener("blur", () => { yt.value = tool.video.youtube; renderEditor(); });
+  card.appendChild(field("YouTube link or ID <span class='opt'>(optional)</span>", yt,
+    tool.video.youtube ? "Video ID: " + esc(tool.video.youtube) : "Paste a full YouTube link — the ID is picked out automatically."));
+
+  const row = el("div", "inline");
+  const up = el("button", "btn", tool.video.file ? "Replace video file" : "Upload video file");
+  up.addEventListener("click", () => pickFile("video/*", async file => {
+    const mb = file.size / 1048576;
+    if (mb > 30 && !confirm(`That video is ${mb.toFixed(0)} MB. Clips under about 90 seconds (roughly 25 MB) work best — larger files make the repository grow and are slow to load in a headset.\n\nUse it anyway?`)) return;
+    const path = `media/videos/${tool.id}.${extFor(file)}`;
+    await MediaStore.put(path, file);
+    tool.video.file = path;
+    setDirty(true); renderEditor(); toast("Video staged — press Publish to save it.");
+  }));
+  row.appendChild(up);
+  if (tool.video.file) {
+    const rm = el("button", "btn ghost", "Remove video file");
+    rm.addEventListener("click", () => { tool.video.file = ""; setDirty(true); renderEditor(); });
+    row.appendChild(rm);
+    row.appendChild(el("span", "charcount", esc(tool.video.file)));
+  }
+  card.appendChild(field("Video file for VR <span class='opt'>(optional)</span>", row,
+    tool.video.file ? "" : "Without a file, students in a headset will not see a video for this tool."));
+  return card;
+}
+
+function extractYouTubeId(v) {
+  if (!v) return "";
+  const s = v.trim();
+  const m = s.match(/(?:youtu\.be\/|v=|embed\/|shorts\/)([A-Za-z0-9_-]{11})/);
+  if (m) return m[1];
+  if (/^[A-Za-z0-9_-]{11}$/.test(s)) return s;
+  return "";
+}
+
+function extFor(file) {
+  const fromName = (file.name.split(".").pop() || "").toLowerCase();
+  if (/^[a-z0-9]{2,5}$/.test(fromName)) return fromName;
+  return (file.type.split("/")[1] || "bin").toLowerCase();
+}
+
+function pickFile(accept, cb) {
+  const i = el("input");
+  i.type = "file"; i.accept = accept;
+  i.addEventListener("change", () => { if (i.files && i.files[0]) cb(i.files[0]); });
+  i.click();
+}
+
+/* ---------------- Quiz ---------------- */
+function quizCard(tool) {
+  const card = el("div", "card");
+  card.appendChild(el("h3", null, "Quiz"));
+  card.appendChild(el("p", "hint", "Three questions per tool, four answers each. Mark the correct answer with the radio button on the right."));
+
+  tool.quiz.forEach((q, qi) => {
+    const wrap = el("div", "q");
+    wrap.appendChild(field(`Question ${qi + 1}`, textInput(q.q, v => q.q = v, "What is this tool mainly used for?")));
+    q.options.forEach((opt, oi) => {
+      const row = el("div", "opt-row");
+      row.appendChild(textInput(opt, v => q.options[oi] = v, `Answer ${String.fromCharCode(65 + oi)}`));
+      const lab = el("label");
+      const radio = el("input");
+      radio.type = "radio"; radio.name = `correct-${tool.id}-${qi}`; radio.checked = q.correct === oi;
+      radio.addEventListener("change", () => { q.correct = oi; setDirty(true); });
+      lab.appendChild(radio); lab.appendChild(document.createTextNode("correct"));
+      row.appendChild(lab);
+      wrap.appendChild(row);
+    });
+    card.appendChild(wrap);
+  });
+  return card;
+}
+
+/* Resolves a media path to something displayable: a staged upload if there is
+   one, otherwise the published file. */
+async function resolveMediaSrc(path) {
+  const staged = await MediaStore.get(path).catch(() => null);
+  if (staged && staged.blob) return URL.createObjectURL(staged.blob);
+  return path + "?t=" + Date.now();
+}
+
+/* =====================================================================
+   Validation
+   ===================================================================== */
+function validate(content) {
+  const errors = [], warnings = [];
+  const ids = [];
+  content.trades.forEach(trade => {
+    if (!trade.name) errors.push(`A trade (${trade.id}) has no name.`);
+    if (ids.includes(trade.id)) errors.push(`Two trades share the id “${trade.id}”.`);
+    ids.push(trade.id);
+    const toolIds = [];
+    const live = trade.tools.filter(t => !t.archived);
+    if (!trade.archived && !live.length) warnings.push(`“${trade.name}” has no visible tools, so students will not see it.`);
+    trade.tools.forEach(tool => {
+      const where = `${trade.name} › ${tool.name || tool.id}`;
+      if (!tool.name) errors.push(`A tool in ${trade.name} has no name.`);
+      if (toolIds.includes(tool.id)) errors.push(`Two tools in ${trade.name} share the id “${tool.id}”.`);
+      toolIds.push(tool.id);
+      if (tool.archived) return;
+      if (!tool.short) warnings.push(`${where}: no short description for the tool card.`);
+      if (!tool.what) warnings.push(`${where}: “What this tool is” is empty.`);
+      if (!tool.usage) warnings.push(`${where}: “How it's used in the trade” is empty.`);
+      if (!tool.photo || !tool.photo.src) warnings.push(`${where}: no photo, so students see a 3D stand-in.`);
+      const named = tool.parts.filter(p => p.label);
+      if (!named.length) warnings.push(`${where}: no parts have been named.`);
+      named.forEach((p, i) => {
+        if (!p.body) warnings.push(`${where}: part “${p.label}” has no description.`);
+        if (tool.photo && tool.photo.src && (p.x === null || p.y === null))
+          warnings.push(`${where}: part “${p.label}” has not been placed on the photo.`);
+      });
+      if (!tool.video.youtube && !tool.video.file) warnings.push(`${where}: no video.`);
+      if (tool.video.youtube && !tool.video.file) warnings.push(`${where}: YouTube link only — no video inside VR.`);
+      tool.quiz.forEach((q, qi) => {
+        if (!q.q) { warnings.push(`${where}: question ${qi + 1} is empty.`); return; }
+        const filled = q.options.filter(o => o && o.trim());
+        if (filled.length < 2) errors.push(`${where}: question ${qi + 1} needs at least two answers.`);
+        if (!q.options[q.correct] || !q.options[q.correct].trim())
+          errors.push(`${where}: question ${qi + 1} has no correct answer marked.`);
+      });
+    });
+  });
+  return { errors, warnings };
+}
+
+/* =====================================================================
+   Preview, backup
+   ===================================================================== */
+$("#previewBtn").addEventListener("click", async () => {
+  // Substitute staged uploads with local blob URLs so the preview shows them.
+  const copy = JSON.parse(JSON.stringify(state.content));
+  const staged = await MediaStore.all().catch(() => []);
+  const map = {};
+  staged.forEach(s => { map[s.path] = URL.createObjectURL(s.blob); });
+  copy.trades.forEach(t => t.tools.forEach(tool => {
+    if (tool.photo && map[tool.photo.src]) tool.photo = { ...tool.photo, src: map[tool.photo.src] };
+    if (tool.video && map[tool.video.file]) tool.video = { ...tool.video, file: map[tool.video.file] };
+  }));
+  localStorage.setItem(LS.preview, JSON.stringify(copy));
+  window.open("index.html?preview=1", "_blank");
+});
+
+$("#backupBtn").addEventListener("click", () => downloadBackup("manual"));
+
+function downloadBackup(reason) {
+  const blob = new Blob([JSON.stringify(state.content, null, 2)], { type: "application/json" });
+  const a = el("a");
+  const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-");
+  a.href = URL.createObjectURL(blob);
+  a.download = `forgexr-content-${stamp}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  if (reason === "manual") toast("Backup downloaded.");
+}
+
+/* =====================================================================
+   Settings
+   ===================================================================== */
+$("#settingsBtn").addEventListener("click", openSettings);
+
+function openSettings() {
+  const s = repoDefaults();
+  const veil = el("div", "veil");
+  const m = el("div", "modal");
+  m.innerHTML = `
+    <h3>Publishing settings</h3>
+    <p>The portal saves your changes straight into the repository, so every edit is a versioned commit.
+       Your token is kept in this browser only and is never written into the site.</p>
+    <div class="field"><label>GitHub owner</label><input type="text" id="sOwner" value="${esc(s.owner)}" placeholder="techntel4u"></div>
+    <div class="field"><label>Repository</label><input type="text" id="sRepo" value="${esc(s.repo)}" placeholder="voctools"></div>
+    <div class="field"><label>Branch <span class="opt">(must be the branch GitHub Pages publishes)</span></label>
+      <div class="inline"><input type="text" id="sBranch" value="${esc(s.branch)}" placeholder="main">
+      <button class="btn ghost" id="listBranches">List branches</button></div>
+      <div class="charcount" id="branchList"></div></div>
+    <div class="field"><label>Access token</label>
+      <input type="text" id="sToken" value="${esc(s.token)}" placeholder="github_pat_…">
+      <div class="charcount">Create a fine-grained personal access token with <b>Contents: Read and write</b> on this
+      repository only. Keep it private — anyone with it can change the site.</div></div>
+    <div class="actions">
+      <button class="btn ghost" id="sCancel">Cancel</button>
+      <button class="btn" id="sSave">Save</button>
+    </div>`;
+  veil.appendChild(m); document.body.appendChild(veil);
+
+  m.querySelector("#sCancel").addEventListener("click", () => veil.remove());
+  m.querySelector("#sSave").addEventListener("click", () => {
+    saveSettings({
+      owner: m.querySelector("#sOwner").value.trim(),
+      repo: m.querySelector("#sRepo").value.trim(),
+      branch: m.querySelector("#sBranch").value.trim() || "main",
+      token: m.querySelector("#sToken").value.trim()
+    });
+    veil.remove(); toast("Settings saved.");
+  });
+  m.querySelector("#listBranches").addEventListener("click", async () => {
+    const out = m.querySelector("#branchList");
+    out.textContent = "Checking…";
+    try {
+      const cfg = {
+        owner: m.querySelector("#sOwner").value.trim(),
+        repo: m.querySelector("#sRepo").value.trim(),
+        token: m.querySelector("#sToken").value.trim()
+      };
+      const res = await gh(cfg, `/repos/${cfg.owner}/${cfg.repo}/branches?per_page=100`);
+      out.innerHTML = "Branches: " + res.map(b => `<a href="#" data-b="${esc(b.name)}">${esc(b.name)}</a>`).join(", ");
+      out.querySelectorAll("a").forEach(a => a.addEventListener("click", e => {
+        e.preventDefault(); m.querySelector("#sBranch").value = a.dataset.b;
+      }));
+    } catch (err) { out.textContent = "Could not list branches: " + err.message; }
+  });
+}
+
+/* =====================================================================
+   Publish — one atomic git commit containing the content file and any
+   staged media.
+   ===================================================================== */
+async function gh(cfg, path, opts = {}) {
+  const res = await fetch("https://api.github.com" + path, {
+    ...opts,
+    headers: {
+      "Accept": "application/vnd.github+json",
+      "Authorization": "Bearer " + cfg.token,
+      "Content-Type": "application/json",
+      ...(opts.headers || {})
+    }
+  });
+  if (!res.ok) {
+    let detail = "";
+    try { detail = (await res.json()).message || ""; } catch {}
+    throw new Error(`GitHub ${res.status}${detail ? " — " + detail : ""}`);
+  }
+  return res.status === 204 ? null : res.json();
+}
+
+function blobToBase64(blob) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(String(r.result).split(",")[1]);
+    r.onerror = () => rej(r.error);
+    r.readAsDataURL(blob);
+  });
+}
+
+$("#publishBtn").addEventListener("click", openPublish);
+
+async function openPublish() {
+  const cfg = repoDefaults();
+  const { errors, warnings } = validate(state.content);
+  const staged = await MediaStore.all().catch(() => []);
+
+  const veil = el("div", "veil");
+  const m = el("div", "modal");
+  const missing = !cfg.owner || !cfg.repo || !cfg.token;
+  m.innerHTML = `
+    <h3>Publish to students</h3>
+    <p>This writes <b>content.json</b>${staged.length ? ` and ${staged.length} media file${staged.length === 1 ? "" : "s"}` : ""}
+       to <b>${esc(cfg.owner || "?")}/${esc(cfg.repo || "?")}</b> on branch <b>${esc(cfg.branch)}</b> as a single commit.
+       The live site updates a minute or so later.</p>
+    ${missing ? `<div class="issue err">Publishing settings are incomplete — open <b>Settings</b> and add the owner, repository and token.</div>` : ""}
+    ${errors.map(e => `<div class="issue err">${esc(e)}</div>`).join("")}
+    ${warnings.slice(0, 12).map(w => `<div class="issue warn">${esc(w)}</div>`).join("")}
+    ${warnings.length > 12 ? `<div class="charcount">…and ${warnings.length - 12} more note${warnings.length - 12 === 1 ? "" : "s"}.</div>` : ""}
+    ${!errors.length && !warnings.length ? `<div class="issue" style="background:rgba(46,139,87,.1);color:#1e5e37">Everything looks complete.</div>` : ""}
+    <div class="field" style="margin-top:14px"><label>Describe this change <span class="opt">(saved with the commit)</span></label>
+      <input type="text" id="pMsg" value="Update tool content" ></div>
+    <div id="pLog" class="log" style="display:none"></div>
+    <div class="actions">
+      <button class="btn ghost" id="pCancel">Cancel</button>
+      <button class="btn" id="pGo" ${errors.length || missing ? "disabled" : ""}>${errors.length ? "Fix errors first" : "Publish"}</button>
+    </div>`;
+  veil.appendChild(m); document.body.appendChild(veil);
+  m.querySelector("#pCancel").addEventListener("click", () => veil.remove());
+
+  m.querySelector("#pGo").addEventListener("click", async () => {
+    const log = m.querySelector("#pLog");
+    log.style.display = "block";
+    const say = t => { log.textContent += t + "\n"; log.scrollTop = log.scrollHeight; };
+    m.querySelector("#pGo").disabled = true;
+    m.querySelector("#pCancel").disabled = true;
+
+    try {
+      // A local copy is downloaded first, so there is always a backup even if
+      // the upload fails halfway.
+      downloadBackup("auto");
+      say("Local backup downloaded.");
+
+      state.content.updated = new Date().toISOString();
+      state.content.updatedBy = "admin portal";
+
+      const ref = await gh(cfg, `/repos/${cfg.owner}/${cfg.repo}/git/ref/heads/${encodeURIComponent(cfg.branch)}`);
+      const headSha = ref.object.sha;
+      say("Branch " + cfg.branch + " is at " + headSha.slice(0, 7) + ".");
+      const headCommit = await gh(cfg, `/repos/${cfg.owner}/${cfg.repo}/git/commits/${headSha}`);
+
+      const tree = [];
+      const contentB64 = btoa(unescape(encodeURIComponent(JSON.stringify(state.content, null, 2) + "\n")));
+      const cBlob = await gh(cfg, `/repos/${cfg.owner}/${cfg.repo}/git/blobs`, {
+        method: "POST", body: JSON.stringify({ content: contentB64, encoding: "base64" })
+      });
+      tree.push({ path: "content.json", mode: "100644", type: "blob", sha: cBlob.sha });
+      say("content.json prepared.");
+
+      for (const item of staged) {
+        say(`Uploading ${item.path} (${(item.blob.size / 1048576).toFixed(1)} MB)…`);
+        const b64 = await blobToBase64(item.blob);
+        const blob = await gh(cfg, `/repos/${cfg.owner}/${cfg.repo}/git/blobs`, {
+          method: "POST", body: JSON.stringify({ content: b64, encoding: "base64" })
+        });
+        tree.push({ path: item.path, mode: "100644", type: "blob", sha: blob.sha });
+      }
+
+      const newTree = await gh(cfg, `/repos/${cfg.owner}/${cfg.repo}/git/trees`, {
+        method: "POST", body: JSON.stringify({ base_tree: headCommit.tree.sha, tree })
+      });
+      const msg = (m.querySelector("#pMsg").value || "Update tool content").trim();
+      const commit = await gh(cfg, `/repos/${cfg.owner}/${cfg.repo}/git/commits`, {
+        method: "POST", body: JSON.stringify({ message: msg + "\n\nPublished from the ForgeXR admin portal.", tree: newTree.sha, parents: [headSha] })
+      });
+      await gh(cfg, `/repos/${cfg.owner}/${cfg.repo}/git/refs/heads/${encodeURIComponent(cfg.branch)}`, {
+        method: "PATCH", body: JSON.stringify({ sha: commit.sha })
+      });
+
+      say("Published as commit " + commit.sha.slice(0, 7) + ".");
+      await MediaStore.clear();
+      localStorage.removeItem(LS.draft);
+      state.published = JSON.parse(JSON.stringify(state.content));
+      setDirty(false);
+      say("Done. The live site updates within a minute or two.");
+      m.querySelector("#pCancel").disabled = false;
+      m.querySelector("#pCancel").textContent = "Close";
+      toast("Published.");
+      renderEditor();
+    } catch (err) {
+      say("FAILED: " + err.message);
+      say("Nothing was changed on the site. Your work is still here, and a backup was downloaded.");
+      m.querySelector("#pGo").disabled = false;
+      m.querySelector("#pCancel").disabled = false;
+    }
+  });
+}
+
+/* Skip the lock screen for the rest of the browser session once unlocked. */
+if (sessionStorage.getItem(LS.unlocked) === "1") start();
+</script>
+</body>
+</html>

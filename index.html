@@ -343,158 +343,109 @@ import * as THREE from 'three';
    ========================================================= */
 
 
-const PROFESSIONS = {
-  plumbing: {
-    name: "Plumbing",
-    icon: "🔧",
-    chipBg: "#e7eefc",
-    tagline: "Keeping water, waste and gas systems flowing safely.",
-    available: true,
-    tools: [
-      {
-        id: "pipe-wrench",
-        name: "Pipe Wrench",
-        icon: "🔧",
-        short: "Grips and turns round pipe and fittings without crushing them.",
-        model: "pipeWrench",
-        // Photograph of the real tool. Hotspot x/y are percentages of this
-        // image, so they stay correct at any display size.
-        photos: [
-          { src: "media/tools/pipe-wrench.jpg", w: 464, h: 695, label: "Side view" }
-        ],
-        what: "A pipe wrench has serrated, self-tightening jaws — one fixed hook jaw and one adjustable jaw set with a knurled nut. The more force you apply, the harder the jaws bite into the pipe.",
-        usage: "Plumbers use it to grip and turn round pipe and fittings without crushing or slipping — essential for assembling or removing threaded steel and iron pipework.",
-        video: "IwqlSQ3iu1o",
-        hotspots: [
-          { key: "hook", label: "Hook jaw", x: 12, y: 26, pos: [0, 0.30, 0.09], body: "The fixed, curved jaw. It hooks onto the pipe while the adjustable jaw clamps from the other side." },
-          { key: "nut", label: "Adjusting nut", x: 36, y: 48, pos: [0.12, 0.02, 0.05], body: "A knurled nut that winds the lower jaw up or down, setting the size of the bite for different pipe diameters." },
-          { key: "handle", label: "Handle", x: 71, y: 67, pos: [0, -0.55, 0.06], body: "A long handle gives leverage — the harder you pull, the tighter the serrated jaws grip the pipe." },
-          { key: "video", label: "Watch it in action", pos: [0, 0.58, 0], isVideo: true, body: "See a pipe wrench being used to grip and turn pipe." }
-        ],
-        quiz: [
-          { q: "What makes a pipe wrench different from a normal spanner?", options: ["It has smooth jaws for delicate work", "Its serrated jaws bite harder under load", "It only fits square nuts", "It has no adjustable parts"], correct: 1 },
-          { q: "What is a pipe wrench mainly designed to grip?", options: ["Round pipe and fittings", "Flat sheet metal", "Electrical cable", "Glass tubing"], correct: 0 },
-          { q: "What adjusts the size of a pipe wrench's jaw opening?", options: ["A trigger", "A knurled adjusting nut", "A magnet", "A foot pedal"], correct: 1 }
-        ]
-      },
-      {
-        id: "adjustable-spanner",
-        name: "Adjustable Spanner",
-        icon: "🔩",
-        short: "One tool, many sizes — a moving jaw set by a worm screw.",
-        model: "adjustableSpanner",
-        what: "An adjustable spanner (wrench) has one fixed jaw and one moving jaw, set by turning a worm screw. That lets a single tool fit many different nut and bolt sizes.",
-        usage: "Plumbers reach for it on compression fittings, tap connectors and nuts where an exact-size spanner isn't to hand — a genuine multi-size tool for the toolbox.",
-        video: "M35hY7uBhLY",
-        hotspots: [
-          { key: "jaw", label: "Jaws", pos: [0, 0.20, 0.06], body: "One jaw is fixed to the head, the other slides to grip nuts and fittings of different widths." },
-          { key: "worm", label: "Worm screw", pos: [0, -0.02, 0.05], body: "Turning this knurled wheel moves the sliding jaw in or out to fit the fitting exactly." },
-          { key: "handle", label: "Handle", pos: [0, -0.5, 0.05], body: "A flat steel handle that gives good leverage for turning nuts and fittings." },
-          { key: "video", label: "Watch it in action", pos: [0, 0.48, 0], isVideo: true, body: "See an adjustable spanner being set and used on plumbing fittings." }
-        ],
-        quiz: [
-          { q: "What lets an adjustable spanner fit different sized nuts?", options: ["A hinge", "A worm screw that moves one jaw", "A spring clip", "Magnets"], correct: 1 },
-          { q: "To avoid rounding off a nut, which way should you pull?", options: ["Push away from you", "Pull toward you so the fixed jaw takes the load", "Twist side to side", "Direction doesn't matter"], correct: 1 },
-          { q: "Adjustable spanners are especially useful for:", options: ["Tasks needing one exact fixed size only", "A range of nut and bolt sizes on the job", "Cutting pipe", "Testing voltage"], correct: 1 }
-        ]
-      },
-      {
-        id: "plunger",
-        name: "Plunger",
-        icon: "🪠",
-        short: "A sealed rubber cup that forces pressure through a blocked pipe.",
-        model: "plunger",
-        what: "A plunger uses a flexible rubber cup to form a seal, then pushes and pulls water to force air and pressure through a pipe and shift a blockage.",
-        usage: "Plumbers use it as the first, simplest tool for clearing blocked toilets, sinks and drains before reaching for rods, augers or chemical cleaners.",
-        video: "gIMyxQ8AB6o",
-        hotspots: [
-          { key: "cup", label: "Rubber cup", pos: [0, -0.15, 0.19], body: "The flexible cup forms an airtight seal over the drain opening so pressure can build up." },
-          { key: "handle", label: "Handle", pos: [0, 0.45, 0.04], body: "A long handle lets you pump the cup up and down with steady, controlled force." },
-          { key: "ferrule", label: "Ferrule", pos: [0, 0.05, 0.05], body: "The metal collar joining handle to cup, keeping the two firmly fixed together." },
-          { key: "video", label: "Watch it in action", pos: [0, 0.95, 0], isVideo: true, body: "See the correct technique for plunging a blocked drain." }
-        ],
-        quiz: [
-          { q: "What does a plunger rely on to clear a blockage?", options: ["Suction cutting through the clog", "A sealed cup pushing air/water pressure through the pipe", "Heat", "Electric current"], correct: 1 },
-          { q: "What is essential for a plunger to work well?", options: ["A good seal over the opening", "A completely dry drain", "Removing the toilet first", "A magnet"], correct: 0 },
-          { q: "A plunger is typically:", options: ["The last resort after cutting the pipe", "The first, simplest tool to try on a blockage", "Only used for testing water pressure", "Never used by professionals"], correct: 1 }
-        ]
+/* Content is managed in the admin portal (admin.html) and stored in
+   content.json, which is committed to this repository. Every change is
+   therefore a git commit: nothing is lost and any edit can be rolled back. */
+
+let PROFESSIONS = {};
+
+async function loadContent() {
+  try {
+    // ?preview=1 renders the admin portal's unpublished draft instead of the
+    // live file, so changes can be checked before students ever see them.
+    if (new URLSearchParams(location.search).get("preview") === "1") {
+      const draft = localStorage.getItem("forgexr.preview");
+      if (draft) {
+        PROFESSIONS = contentToProfessions(JSON.parse(draft));
+        showPreviewBanner();
+        return true;
       }
-    ]
-  },
-  electrical: {
-    name: "Electrical Installation",
-    icon: "⚡",
-    chipBg: "#fff3d6",
-    tagline: "Wiring, testing and maintaining safe electrical systems.",
-    available: true,
-    mockup: true,
-    tools: [
-      {
-        id: "wire-strippers",
-        name: "Wire Strippers",
-        icon: "✂️",
-        short: "Shaped notches cut insulation without nicking the copper.",
-        model: "wireStrippers",
-        what: "Wire strippers have shaped notches sized to different cable diameters, gripping and cutting through insulation without nicking the copper conductor underneath.",
-        usage: "Electricians use them to remove an exact length of insulation before connecting or terminating a cable — a clean strip makes for a safer, more reliable connection.",
-        video: "fDo-KbKRd4A",
-        hotspots: [
-          { key: "jaws", label: "Notched jaws", pos: [0, 0.30, 0.06], body: "Graduated notches match common cable sizes, cutting the insulation cleanly without damaging the wire." },
-          { key: "pivot", label: "Pivot", pos: [0, 0, 0.06], body: "The pivot point lets the two handles scissor together to close the jaws with force." },
-          { key: "grips", label: "Handle grips", pos: [0, -0.4, 0.06], body: "Moulded grips give a comfortable, secure hold for repeated stripping and cutting." },
-          { key: "video", label: "Watch it in action", pos: [0, 0.42, 0.22], isVideo: true, body: "See wire strippers being used to prepare a cable end." }
-        ],
-        quiz: [
-          { q: "What are wire strippers designed to avoid damaging?", options: ["The cable insulation only", "The copper conductor inside", "The wall socket", "The plug top"], correct: 1 },
-          { q: "Why does a clean, precise strip matter?", options: ["It looks tidy, nothing more", "For a safe, reliable electrical connection", "It voids the warranty otherwise", "It has no real purpose"], correct: 1 },
-          { q: "Wire strippers are mainly used before:", options: ["Painting a wall", "Connecting or terminating a cable", "Testing water pressure", "Cutting pipe threads"], correct: 1 }
-        ]
-      },
-      {
-        id: "multimeter",
-        name: "Multimeter",
-        icon: "📟",
-        short: "Measures voltage, current and resistance in a circuit.",
-        model: "multimeter",
-        what: "A multimeter measures voltage, current and resistance, letting you test whether a circuit is live, broken, or working correctly.",
-        usage: "Electricians use it constantly — to prove a circuit is dead before working on it, diagnose faults, and check the continuity of wiring.",
-        video: "hgTgx_h5QOk",
-        hotspots: [
-          { key: "screen", label: "Display", pos: [0, 0.16, 0.05], body: "Shows the live reading — volts, amps, ohms or continuity, depending on the dial setting." },
-          { key: "dial", label: "Selector dial", pos: [0, -0.06, 0.05], body: "Chooses what you're measuring: AC/DC voltage, current, resistance or continuity." },
-          { key: "probes", label: "Test probes", pos: [0, -0.38, 0.05], body: "Red (positive) and black (negative) leads touch the circuit to take a reading." },
-          { key: "video", label: "Watch it in action", pos: [0, 0.34, 0.12], isVideo: true, body: "See the basics of using a multimeter safely." }
-        ],
-        quiz: [
-          { q: "Which of these can a multimeter measure?", options: ["Voltage, current and resistance", "Only temperature", "Only water flow", "Only distance"], correct: 0 },
-          { q: "Why test with a multimeter before working on a circuit?", options: ["To measure paint thickness", "To prove the circuit is safely dead", "To time the job", "To weigh a component"], correct: 1 },
-          { q: "Testing \"continuity\" tells you:", options: ["Whether a wire path is complete and unbroken", "The colour of a cable", "The cost of a fault", "The building's total power use"], correct: 0 }
-        ]
-      },
-      {
-        id: "insulated-screwdriver",
-        name: "Insulated Screwdriver",
-        icon: "🪛",
-        short: "VDE-rated insulation protects against shock near live parts.",
-        model: "screwdriver",
-        what: "An insulated screwdriver is rated (commonly VDE 1000V) with insulation built into the handle and shaft to protect against electric shock when working near live parts.",
-        usage: "Electricians use VDE-rated tools whenever there's a risk of contact with a live conductor — extra protection layered on top of safe isolation procedures, never a replacement for them.",
-        video: "0IOukPkvOtc",
-        hotspots: [
-          { key: "handle", label: "Insulated handle", pos: [0, 0.24, 0.04], body: "Moulded, tested insulation rated to a specific voltage (commonly 1000V) — the tool's main safety feature." },
-          { key: "shaft", label: "Insulated shaft", pos: [0, -0.12, 0.02], body: "Unlike a standard screwdriver, the metal shaft itself is coated in insulation, right up to the tip." },
-          { key: "tip", label: "Tip", pos: [0, -0.48, 0.02], body: "Only the very tip is bare metal, sized to fit the screw head precisely and avoid slipping." },
-          { key: "video", label: "Watch it in action", pos: [0, 0.5, 0.1], isVideo: true, body: "See what to look for in a genuine VDE-insulated screwdriver." }
-        ],
-        quiz: [
-          { q: "What does \"VDE rated\" mean for a screwdriver?", options: ["It's tested and insulated for use near live electrical parts", "It's just a colour standard", "It means it's magnetic", "It means it's extra long"], correct: 0 },
-          { q: "Insulated tools are used:", options: ["Instead of switching off the power", "As extra protection alongside safe isolation", "Only for plumbing work", "Only for show"], correct: 1 },
-          { q: "What should you check before using one?", options: ["The handle colour matches your van", "The insulation isn't damaged or worn", "It's the most expensive one available", "Nothing — they're always safe"], correct: 1 }
-        ]
-      }
-    ]
+    }
+    const res = await fetch("content.json", { cache: "no-store" });
+    if (!res.ok) throw new Error("content.json returned " + res.status);
+    PROFESSIONS = contentToProfessions(await res.json());
+    if (!Object.keys(PROFESSIONS).length) throw new Error("no trades are published yet");
+    return true;
+  } catch (err) {
+    showContentError(err);
+    return false;
   }
-};
+}
+
+/* Adapts the stored content into the shape the viewer works with, so the
+   storage format can change without touching the viewer. */
+function contentToProfessions(content) {
+  const out = {};
+  (content.trades || []).filter(t => t && t.id && !t.archived).forEach(trade => {
+    const tools = (trade.tools || []).filter(t => t && t.id && !t.archived).map(toolFromContent);
+    if (!tools.length) return;
+    out[trade.id] = {
+      name: trade.name || trade.id,
+      icon: trade.icon || "\u{1F6E0}\u{FE0F}",
+      chipBg: trade.chipBg || "#efe6ee",
+      tagline: trade.tagline || "",
+      available: true,
+      mockup: !!trade.mockup,
+      tools
+    };
+  });
+  return out;
+}
+
+function toolFromContent(t) {
+  const hotspots = (t.parts || []).filter(p => p && p.label).map((p, i) => ({
+    key: "part" + i,
+    label: p.label,
+    body: p.body || "",
+    x: p.x === null ? undefined : p.x,
+    y: p.y === null ? undefined : p.y,
+    pos: p.pos || [0, 0.1 - i * 0.3, 0.06]
+  }));
+
+  const youtube = (t.video && t.video.youtube) || "";
+  const file = (t.video && t.video.file) || "";
+  if (youtube || file) {
+    hotspots.push({
+      key: "video", label: "Watch it in action", isVideo: true, pos: [0, 0.55, 0],
+      body: "See this tool being used on a real job."
+    });
+  }
+
+  return {
+    id: t.id,
+    name: t.name || t.id,
+    icon: t.icon || "\u{1F527}",
+    short: t.short || "",
+    what: t.what || "",
+    usage: t.usage || "",
+    model: t.model || null,
+    photos: t.photo && t.photo.src ? [t.photo] : null,
+    video: youtube,
+    // An uploaded file plays inside the headset; the YouTube link cannot.
+    videoFile: file ? [file] : null,
+    hotspots,
+    quiz: (t.quiz || []).filter(q => q && q.q && Array.isArray(q.options))
+  };
+}
+
+function showPreviewBanner() {
+  const b = document.createElement("div");
+  b.textContent = "PREVIEW — unpublished draft, not what students see";
+  b.style.cssText = "position:fixed;bottom:0;left:0;right:0;z-index:200;background:#C9A227;color:#3a2c05;" +
+    "font:700 12px Inter,sans-serif;letter-spacing:.5px;text-align:center;padding:6px;pointer-events:none";
+  document.body.appendChild(b);
+}
+
+function showContentError(err) {
+  const home = $("#screen-home");
+  home.innerHTML = `
+    <div class="eyebrow">City of Wolverhampton College</div>
+    <h1>Content unavailable</h1>
+    <p class="lead">The tool content could not be loaded.<br><b>${String(err.message || err)}</b></p>
+    <p class="lead" style="font-size:14px">If you are viewing this from a file on your computer, serve the folder over
+    http instead. If you have just published a change, wait a minute and refresh.</p>`;
+  screens.forEach(s => $("#screen-" + s).classList.toggle("hidden", s !== "home"));
+}
 
 /* =========================================================
    NAVIGATION STATE
@@ -937,6 +888,28 @@ function buildScrewdriver() {
   const tip = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.02, 0.008), metalMat(COL.steelDark));
   tip.position.set(0, -0.58, 0);
   g.add(tip);
+  return g;
+}
+
+/* Shown when a tool has no photograph yet and no 3D stand-in — better than a
+   blank stage, and it tells whoever is editing what to do about it. */
+function buildMissingArtwork() {
+  const g = new THREE.Group();
+  const { c, ctx } = makeCanvas(760, 1000);
+  ctx.fillStyle = "#3a2740";
+  roundRect(ctx, 0, 0, 760, 1000, 28); ctx.fill();
+  ctx.strokeStyle = "rgba(201,162,39,.6)"; ctx.lineWidth = 6;
+  roundRect(ctx, 12, 12, 736, 976, 24); ctx.stroke();
+  ctx.textAlign = "center";
+  ctx.fillStyle = "#C9A227"; ctx.font = "bold 34px Inter, sans-serif";
+  ctx.fillText("NO PHOTO YET", 380, 440);
+  ctx.fillStyle = "#E4D8E4"; ctx.font = "28px Inter, sans-serif";
+  ctx.fillText("Add a photo of this tool", 380, 510);
+  ctx.fillText("in the admin portal", 380, 550);
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  g.add(new THREE.Mesh(new THREE.PlaneGeometry(0.76, 1.0),
+    new THREE.MeshBasicMaterial({ map: tex, side: THREE.DoubleSide })));
   return g;
 }
 
@@ -1660,7 +1633,8 @@ function buildScene(tool) {
       }
     });
   } else {
-    const model = MODEL_BUILDERS[tool.model]();
+    const build = MODEL_BUILDERS[tool.model] || buildMissingArtwork;
+    const model = build();
     toolInner.add(model);
 
     // Measure the model so framing and marker sizing don't depend on hand-tuned
@@ -1738,9 +1712,13 @@ function placePhotoMarkers(parts, planeW, planeH) {
   parts.forEach((item, i) => {
     const marker = hotspotGroup.children[i];
     if (!marker) return;
-    const px = (item.x !== undefined ? item.x : 50) / 100;
-    const py = (item.y !== undefined ? item.y : 50) / 100;
-    marker.position.set((px - 0.5) * planeW, (0.5 - py) * planeH, 0.012);
+    // A part that has not been positioned in the admin portal gets no marker,
+    // rather than every unplaced part piling up in the middle of the photo.
+    // The menu row still works — only the pointer on the image is missing.
+    const placed = typeof item.x === "number" && typeof item.y === "number";
+    marker.visible = placed;
+    if (!placed) return;
+    marker.position.set((item.x / 100 - 0.5) * planeW, (0.5 - item.y / 100) * planeH, 0.012);
   });
 }
 
@@ -1938,8 +1916,9 @@ function stopViewer() {
 
 $("#reset-view").addEventListener("click", () => { if (toolPivot) { toolPivot.rotation.set(0, 0, 0); } });
 
-// Render whatever route the page was opened on (supports deep links straight to a tool).
-renderRoute();
+// Load the managed content, then render whatever route the page was opened on
+// (deep links straight to a tool are supported).
+loadContent().then(ok => { if (ok) renderRoute(); });
 
 </script>
 </body>

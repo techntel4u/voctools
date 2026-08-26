@@ -2,7 +2,14 @@
 
 A WebXR prototype for **City of Wolverhampton College** vocational students. Pick a trade, explore the tools of that trade in 3D, tap hotspots to learn what each part does and watch a related video, then take a quick quiz to check your learning.
 
-Built as a single self-contained page (`index.html`) using [Three.js](https://threejs.org/) and the WebXR Device API — no build step, no server-side code.
+Built as static pages using [Three.js](https://threejs.org/) and the WebXR Device API — no build step, no server-side code.
+
+| File | What it is |
+|---|---|
+| `index.html` | The student app |
+| `admin.html` | The admin portal for managing content — see [ADMIN.md](ADMIN.md) |
+| `content.json` | All trades, tools, parts, videos and quizzes. Edited by the portal, versioned by git |
+| `media/` | Tool photographs and video clips |
 
 ## Features
 
@@ -13,6 +20,7 @@ Built as a single self-contained page (`index.html`) using [Three.js](https://th
 - **Quick quiz** — a 3-question quiz per tool with instant feedback, a score screen, and retry.
 - **Back navigation** — every screen is a real page (hash route), so the Back button, browser history and the phone/headset back gesture all step back through the app. Tools can be deep-linked.
 - **VR headset support** — an **Enter VR** button appears on the tool viewer when a headset is available.
+- **Admin portal** — add and edit trades, tools, parts, photos, videos and quizzes at `admin.html`, then publish. Every publish is a git commit, so nothing is lost and any change can be rolled back. Full guide: [ADMIN.md](ADMIN.md).
 
 ## Interaction design
 
