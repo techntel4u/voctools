@@ -296,7 +296,7 @@ function repoDefaults() {
     const seg = location.pathname.split("/").filter(Boolean)[0];
     if (seg) repo = repo || seg;
   }
-  return { owner, repo, branch: s.branch || "main", token: s.token || "" };
+  return { owner, repo, branch: s.branch || "", token: s.token || "" };
 }
 
 /* =====================================================================
@@ -963,8 +963,10 @@ function openSettings() {
       <input type="text" id="sToken" value="${esc(s.token)}" placeholder="github_pat_…">
       <div class="charcount">Create a fine-grained personal access token with <b>Contents: Read and write</b> on this
       repository only. Keep it private — anyone with it can change the site.</div></div>
+    <div id="sTest" class="issue" style="display:none"></div>
     <div class="actions">
       <button class="btn ghost" id="sCancel">Cancel</button>
+      <button class="btn ghost" id="sTestBtn">Test connection</button>
       <button class="btn" id="sSave">Save</button>
     </div>`;
   veil.appendChild(m); document.body.appendChild(veil);
@@ -974,11 +976,35 @@ function openSettings() {
     saveSettings({
       owner: m.querySelector("#sOwner").value.trim(),
       repo: m.querySelector("#sRepo").value.trim(),
-      branch: m.querySelector("#sBranch").value.trim() || "main",
+      branch: m.querySelector("#sBranch").value.trim(),
       token: m.querySelector("#sToken").value.trim()
     });
     veil.remove(); toast("Settings saved.");
   });
+  m.querySelector("#sTestBtn").addEventListener("click", async () => {
+    const out = m.querySelector("#sTest");
+    out.style.display = "block";
+    out.className = "issue warn";
+    out.textContent = "Checking…";
+    const cfg = {
+      owner: m.querySelector("#sOwner").value.trim(),
+      repo: m.querySelector("#sRepo").value.trim(),
+      branch: m.querySelector("#sBranch").value.trim(),
+      token: m.querySelector("#sToken").value.trim()
+    };
+    try {
+      const ref = await preflight(cfg);
+      out.className = "issue";
+      out.style.background = "rgba(46,139,87,.1)";
+      out.style.color = "#1e5e37";
+      out.textContent = `Connected. ${cfg.owner}/${cfg.repo} branch “${cfg.branch}” is at commit ${ref.object.sha.slice(0, 7)}. Publishing will work.`;
+    } catch (err) {
+      out.className = "issue err";
+      out.style.background = ""; out.style.color = "";
+      out.textContent = err.message;
+    }
+  });
+
   m.querySelector("#listBranches").addEventListener("click", async () => {
     const out = m.querySelector("#branchList");
     out.textContent = "Checking…";
@@ -1001,6 +1027,50 @@ function openSettings() {
    Publish — one atomic git commit containing the content file and any
    staged media.
    ===================================================================== */
+/* Branch names may contain slashes (feature/my-branch). Those slashes are part
+   of the API path and must stay as slashes — percent-encoding them makes
+   GitHub answer 404 — so each segment is encoded separately. */
+function refPath(branch) {
+  return String(branch).split("/").map(encodeURIComponent).join("/");
+}
+
+/* Works out precisely what is wrong before publishing, because GitHub answers
+   404 for several very different problems. */
+async function preflight(cfg) {
+  if (!cfg.owner || !cfg.repo) throw new Error("Owner and repository are not set — open Settings.");
+  if (!cfg.branch) throw new Error("No branch is set — open Settings and use “List branches” to choose one.");
+  if (!cfg.token) throw new Error("No access token — open Settings and paste one in.");
+
+  try {
+    await gh(cfg, `/repos/${cfg.owner}/${cfg.repo}`);
+  } catch (err) {
+    if (/GitHub 401/.test(err.message))
+      throw new Error("The token was rejected. It may be mistyped, expired, or revoked — create a new one.");
+    if (/GitHub 404/.test(err.message))
+      throw new Error(`Cannot see the repository “${cfg.owner}/${cfg.repo}”. Either the owner or repository name is wrong, ` +
+        `or this token was not granted access to that repository. GitHub deliberately answers “not found” rather than ` +
+        `“forbidden” when a token cannot see a repository, so a permissions problem looks identical to a typo.`);
+    throw err;
+  }
+
+  try {
+    return await gh(cfg, `/repos/${cfg.owner}/${cfg.repo}/git/ref/heads/${refPath(cfg.branch)}`);
+  } catch (err) {
+    if (/GitHub 404/.test(err.message)) {
+      let names = "";
+      try {
+        const list = await gh(cfg, `/repos/${cfg.owner}/${cfg.repo}/branches?per_page=100`);
+        names = list.map(b => b.name).join(", ");
+      } catch { /* listing is a nicety; the message is useful without it */ }
+      throw new Error(`The branch “${cfg.branch}” does not exist in ${cfg.owner}/${cfg.repo}.` +
+        (names ? ` Branches that do exist: ${names}` : ""));
+    }
+    if (/GitHub 403/.test(err.message))
+      throw new Error("The token can see the repository but is not allowed to change it. It needs “Contents: Read and write”.");
+    throw err;
+  }
+}
+
 async function gh(cfg, path, opts = {}) {
   const res = await fetch("https://api.github.com" + path, {
     ...opts,
@@ -1037,13 +1107,13 @@ async function openPublish() {
 
   const veil = el("div", "veil");
   const m = el("div", "modal");
-  const missing = !cfg.owner || !cfg.repo || !cfg.token;
+  const missing = !cfg.owner || !cfg.repo || !cfg.token || !cfg.branch;
   m.innerHTML = `
     <h3>Publish to students</h3>
     <p>This writes <b>content.json</b>${staged.length ? ` and ${staged.length} media file${staged.length === 1 ? "" : "s"}` : ""}
        to <b>${esc(cfg.owner || "?")}/${esc(cfg.repo || "?")}</b> on branch <b>${esc(cfg.branch)}</b> as a single commit.
        The live site updates a minute or so later.</p>
-    ${missing ? `<div class="issue err">Publishing settings are incomplete — open <b>Settings</b> and add the owner, repository and token.</div>` : ""}
+    ${missing ? `<div class="issue err">Publishing settings are incomplete — open <b>Settings</b> and fill in the owner, repository, branch and token.</div>` : ""}
     ${errors.map(e => `<div class="issue err">${esc(e)}</div>`).join("")}
     ${warnings.slice(0, 12).map(w => `<div class="issue warn">${esc(w)}</div>`).join("")}
     ${warnings.length > 12 ? `<div class="charcount">…and ${warnings.length - 12} more note${warnings.length - 12 === 1 ? "" : "s"}.</div>` : ""}
@@ -1074,7 +1144,7 @@ async function openPublish() {
       state.content.updated = new Date().toISOString();
       state.content.updatedBy = "admin portal";
 
-      const ref = await gh(cfg, `/repos/${cfg.owner}/${cfg.repo}/git/ref/heads/${encodeURIComponent(cfg.branch)}`);
+      const ref = await preflight(cfg);
       const headSha = ref.object.sha;
       say("Branch " + cfg.branch + " is at " + headSha.slice(0, 7) + ".");
       const headCommit = await gh(cfg, `/repos/${cfg.owner}/${cfg.repo}/git/commits/${headSha}`);
@@ -1103,7 +1173,7 @@ async function openPublish() {
       const commit = await gh(cfg, `/repos/${cfg.owner}/${cfg.repo}/git/commits`, {
         method: "POST", body: JSON.stringify({ message: msg + "\n\nPublished from the ForgeXR admin portal.", tree: newTree.sha, parents: [headSha] })
       });
-      await gh(cfg, `/repos/${cfg.owner}/${cfg.repo}/git/refs/heads/${encodeURIComponent(cfg.branch)}`, {
+      await gh(cfg, `/repos/${cfg.owner}/${cfg.repo}/git/refs/heads/${refPath(cfg.branch)}`, {
         method: "PATCH", body: JSON.stringify({ sha: commit.sha })
       });
 

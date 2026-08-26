@@ -37,8 +37,10 @@ You need a GitHub token so the portal can save changes.
 5. In the portal, press **Settings** and fill in:
    - **Owner** — your GitHub username or organisation
    - **Repository** — `voctools`
-   - **Branch** — must be the branch GitHub Pages publishes (press *List branches* to see them)
+   - **Branch** — must be the branch GitHub Pages publishes (press *List branches* to see them). There is no default: a branch that does not exist is the most common cause of a failed publish.
    - **Token** — paste it
+
+Press **Test connection** before saving. It checks each thing separately and tells you exactly what is wrong — a bad token, a repository the token cannot see, or a branch that does not exist — rather than leaving you with a bare error at publish time.
 
 The token is stored **only in your browser** and is never written into the site or the repository. If you use a different computer, you'll enter it again there.
 
@@ -158,7 +160,8 @@ The file can also be edited by hand and committed directly — the portal is a c
 |---|---|
 | "Content unavailable" in the student app | `content.json` is missing or malformed on the published branch. Restore the previous version from git history. |
 | Publish fails with **GitHub 401/403** | The token is wrong, expired, or lacks *Contents: Read and write* on this repository. Generate a new one. |
-| Publish fails with **GitHub 404** | Owner, repository or branch is wrong in Settings. Use *List branches* to check. |
+| Publish fails naming a **branch that does not exist** | The branch in Settings is wrong. The message lists the branches that do exist — pick one, or press *List branches*. |
+| Publish says it **cannot see the repository** | The owner/repository is wrong, **or** the token was not granted access to that repository. GitHub answers "not found" rather than "forbidden" when a token cannot see a repository, so a permissions problem looks exactly like a typo. Check the token covers this repo. |
 | Publish fails with **409** | Someone else (or another commit) changed the branch since the portal loaded it. Reload the portal and publish again. |
 | Changes published but the site looks unchanged | GitHub Pages takes a minute or two, and browsers cache. Wait, then hard-refresh. |
 | A photo or video does not appear | It is still staged. The header shows "N files to upload" until you publish. |
