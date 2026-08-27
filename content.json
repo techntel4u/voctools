@@ -1,8 +1,265 @@
 {
   "schemaVersion": 1,
-  "updated": "2026-08-26T22:38:21.775Z",
-  "updatedBy": "initial import",
+  "updated": "2026-08-27T07:04:40.313Z",
+  "updatedBy": "admin portal",
   "trades": [
+    {
+      "id": "electrical",
+      "name": "Electrical Installation",
+      "icon": "⚡",
+      "tagline": "Wiring, testing and maintaining safe electrical systems.",
+      "chipBg": "#fff3d6",
+      "mockup": true,
+      "archived": false,
+      "tools": [
+        {
+          "id": "wire-strippers",
+          "name": "Wire Strippers",
+          "icon": "✂️",
+          "short": "Shaped notches cut insulation without nicking the copper.",
+          "what": "Wire strippers have shaped notches sized to different cable diameters, gripping and cutting through insulation without nicking the copper conductor underneath.",
+          "usage": "Electricians use them to remove an exact length of insulation before connecting or terminating a cable — a clean strip makes for a safer, more reliable connection.",
+          "model": "wireStrippers",
+          "photo": null,
+          "video": {
+            "youtube": "fDo-KbKRd4A",
+            "file": ""
+          },
+          "parts": [
+            {
+              "label": "Notched jaws",
+              "body": "Graduated notches match common cable sizes, cutting the insulation cleanly without damaging the wire.",
+              "x": null,
+              "y": null,
+              "pos": [
+                0,
+                0.3,
+                0.06
+              ]
+            },
+            {
+              "label": "Pivot",
+              "body": "The pivot point lets the two handles scissor together to close the jaws with force.",
+              "x": null,
+              "y": null,
+              "pos": [
+                0,
+                0,
+                0.06
+              ]
+            },
+            {
+              "label": "Handle grips",
+              "body": "Moulded grips give a comfortable, secure hold for repeated stripping and cutting.",
+              "x": null,
+              "y": null,
+              "pos": [
+                0,
+                -0.4,
+                0.06
+              ]
+            }
+          ],
+          "quiz": [
+            {
+              "q": "What are wire strippers designed to avoid damaging?",
+              "options": [
+                "The cable insulation only",
+                "The copper conductor inside",
+                "The wall socket",
+                "The plug top"
+              ],
+              "correct": 1
+            },
+            {
+              "q": "Why does a clean, precise strip matter?",
+              "options": [
+                "It looks tidy, nothing more",
+                "For a safe, reliable electrical connection",
+                "It voids the warranty otherwise",
+                "It has no real purpose"
+              ],
+              "correct": 1
+            },
+            {
+              "q": "Wire strippers are mainly used before:",
+              "options": [
+                "Painting a wall",
+                "Connecting or terminating a cable",
+                "Testing water pressure",
+                "Cutting pipe threads"
+              ],
+              "correct": 1
+            }
+          ],
+          "archived": false
+        },
+        {
+          "id": "multimeter",
+          "name": "Multimeter",
+          "icon": "📟",
+          "short": "Measures voltage, current and resistance in a circuit.",
+          "what": "A multimeter measures voltage, current and resistance, letting you test whether a circuit is live, broken, or working correctly.",
+          "usage": "Electricians use it constantly — to prove a circuit is dead before working on it, diagnose faults, and check the continuity of wiring.",
+          "model": "multimeter",
+          "photo": null,
+          "video": {
+            "youtube": "hgTgx_h5QOk",
+            "file": ""
+          },
+          "parts": [
+            {
+              "label": "Display",
+              "body": "Shows the live reading — volts, amps, ohms or continuity, depending on the dial setting.",
+              "x": null,
+              "y": null,
+              "pos": [
+                0,
+                0.16,
+                0.05
+              ]
+            },
+            {
+              "label": "Selector dial",
+              "body": "Chooses what you're measuring: AC/DC voltage, current, resistance or continuity.",
+              "x": null,
+              "y": null,
+              "pos": [
+                0,
+                -0.06,
+                0.05
+              ]
+            },
+            {
+              "label": "Test probes",
+              "body": "Red (positive) and black (negative) leads touch the circuit to take a reading.",
+              "x": null,
+              "y": null,
+              "pos": [
+                0,
+                -0.38,
+                0.05
+              ]
+            }
+          ],
+          "quiz": [
+            {
+              "q": "Which of these can a multimeter measure?",
+              "options": [
+                "Voltage, current and resistance",
+                "Only temperature",
+                "Only water flow",
+                "Only distance"
+              ],
+              "correct": 0
+            },
+            {
+              "q": "Why test with a multimeter before working on a circuit?",
+              "options": [
+                "To measure paint thickness",
+                "To prove the circuit is safely dead",
+                "To time the job",
+                "To weigh a component"
+              ],
+              "correct": 1
+            },
+            {
+              "q": "Testing \"continuity\" tells you:",
+              "options": [
+                "Whether a wire path is complete and unbroken",
+                "The colour of a cable",
+                "The cost of a fault",
+                "The building's total power use"
+              ],
+              "correct": 0
+            }
+          ],
+          "archived": false
+        },
+        {
+          "id": "insulated-screwdriver",
+          "name": "Insulated Screwdriver",
+          "icon": "🪛",
+          "short": "VDE-rated insulation protects against shock near live parts.",
+          "what": "An insulated screwdriver is rated (commonly VDE 1000V) with insulation built into the handle and shaft to protect against electric shock when working near live parts.",
+          "usage": "Electricians use VDE-rated tools whenever there's a risk of contact with a live conductor — extra protection layered on top of safe isolation procedures, never a replacement for them.",
+          "model": "screwdriver",
+          "photo": null,
+          "video": {
+            "youtube": "0IOukPkvOtc",
+            "file": ""
+          },
+          "parts": [
+            {
+              "label": "Insulated handle",
+              "body": "Moulded, tested insulation rated to a specific voltage (commonly 1000V) — the tool's main safety feature.",
+              "x": null,
+              "y": null,
+              "pos": [
+                0,
+                0.24,
+                0.04
+              ]
+            },
+            {
+              "label": "Insulated shaft",
+              "body": "Unlike a standard screwdriver, the metal shaft itself is coated in insulation, right up to the tip.",
+              "x": null,
+              "y": null,
+              "pos": [
+                0,
+                -0.12,
+                0.02
+              ]
+            },
+            {
+              "label": "Tip",
+              "body": "Only the very tip is bare metal, sized to fit the screw head precisely and avoid slipping.",
+              "x": null,
+              "y": null,
+              "pos": [
+                0,
+                -0.48,
+                0.02
+              ]
+            }
+          ],
+          "quiz": [
+            {
+              "q": "What does \"VDE rated\" mean for a screwdriver?",
+              "options": [
+                "It's tested and insulated for use near live electrical parts",
+                "It's just a colour standard",
+                "It means it's magnetic",
+                "It means it's extra long"
+              ],
+              "correct": 0
+            },
+            {
+              "q": "Insulated tools are used:",
+              "options": [
+                "Instead of switching off the power",
+                "As extra protection alongside safe isolation",
+                "Only for plumbing work",
+                "Only for show"
+              ],
+              "correct": 1
+            },
+            {
+              "q": "What should you check before using one?",
+              "options": [
+                "The handle colour matches your van",
+                "The insulation isn't damaged or worn",
+                "It's the most expensive one available",
+                "Nothing — they're always safe"
+              ],
+              "correct": 1
+            }
+          ],
+          "archived": false
+        }
+      ]
+    },
     {
       "id": "plumbing",
       "name": "Plumbing",
@@ -256,263 +513,6 @@
                 "The first, simplest tool to try on a blockage",
                 "Only used for testing water pressure",
                 "Never used by professionals"
-              ],
-              "correct": 1
-            }
-          ],
-          "archived": false
-        }
-      ]
-    },
-    {
-      "id": "electrical",
-      "name": "Electrical Installation",
-      "icon": "⚡",
-      "tagline": "Wiring, testing and maintaining safe electrical systems.",
-      "chipBg": "#fff3d6",
-      "mockup": true,
-      "archived": false,
-      "tools": [
-        {
-          "id": "wire-strippers",
-          "name": "Wire Strippers",
-          "icon": "✂️",
-          "short": "Shaped notches cut insulation without nicking the copper.",
-          "what": "Wire strippers have shaped notches sized to different cable diameters, gripping and cutting through insulation without nicking the copper conductor underneath.",
-          "usage": "Electricians use them to remove an exact length of insulation before connecting or terminating a cable — a clean strip makes for a safer, more reliable connection.",
-          "model": "wireStrippers",
-          "photo": null,
-          "video": {
-            "youtube": "fDo-KbKRd4A",
-            "file": ""
-          },
-          "parts": [
-            {
-              "label": "Notched jaws",
-              "body": "Graduated notches match common cable sizes, cutting the insulation cleanly without damaging the wire.",
-              "x": null,
-              "y": null,
-              "pos": [
-                0,
-                0.3,
-                0.06
-              ]
-            },
-            {
-              "label": "Pivot",
-              "body": "The pivot point lets the two handles scissor together to close the jaws with force.",
-              "x": null,
-              "y": null,
-              "pos": [
-                0,
-                0,
-                0.06
-              ]
-            },
-            {
-              "label": "Handle grips",
-              "body": "Moulded grips give a comfortable, secure hold for repeated stripping and cutting.",
-              "x": null,
-              "y": null,
-              "pos": [
-                0,
-                -0.4,
-                0.06
-              ]
-            }
-          ],
-          "quiz": [
-            {
-              "q": "What are wire strippers designed to avoid damaging?",
-              "options": [
-                "The cable insulation only",
-                "The copper conductor inside",
-                "The wall socket",
-                "The plug top"
-              ],
-              "correct": 1
-            },
-            {
-              "q": "Why does a clean, precise strip matter?",
-              "options": [
-                "It looks tidy, nothing more",
-                "For a safe, reliable electrical connection",
-                "It voids the warranty otherwise",
-                "It has no real purpose"
-              ],
-              "correct": 1
-            },
-            {
-              "q": "Wire strippers are mainly used before:",
-              "options": [
-                "Painting a wall",
-                "Connecting or terminating a cable",
-                "Testing water pressure",
-                "Cutting pipe threads"
-              ],
-              "correct": 1
-            }
-          ],
-          "archived": false
-        },
-        {
-          "id": "multimeter",
-          "name": "Multimeter",
-          "icon": "📟",
-          "short": "Measures voltage, current and resistance in a circuit.",
-          "what": "A multimeter measures voltage, current and resistance, letting you test whether a circuit is live, broken, or working correctly.",
-          "usage": "Electricians use it constantly — to prove a circuit is dead before working on it, diagnose faults, and check the continuity of wiring.",
-          "model": "multimeter",
-          "photo": null,
-          "video": {
-            "youtube": "hgTgx_h5QOk",
-            "file": ""
-          },
-          "parts": [
-            {
-              "label": "Display",
-              "body": "Shows the live reading — volts, amps, ohms or continuity, depending on the dial setting.",
-              "x": null,
-              "y": null,
-              "pos": [
-                0,
-                0.16,
-                0.05
-              ]
-            },
-            {
-              "label": "Selector dial",
-              "body": "Chooses what you're measuring: AC/DC voltage, current, resistance or continuity.",
-              "x": null,
-              "y": null,
-              "pos": [
-                0,
-                -0.06,
-                0.05
-              ]
-            },
-            {
-              "label": "Test probes",
-              "body": "Red (positive) and black (negative) leads touch the circuit to take a reading.",
-              "x": null,
-              "y": null,
-              "pos": [
-                0,
-                -0.38,
-                0.05
-              ]
-            }
-          ],
-          "quiz": [
-            {
-              "q": "Which of these can a multimeter measure?",
-              "options": [
-                "Voltage, current and resistance",
-                "Only temperature",
-                "Only water flow",
-                "Only distance"
-              ],
-              "correct": 0
-            },
-            {
-              "q": "Why test with a multimeter before working on a circuit?",
-              "options": [
-                "To measure paint thickness",
-                "To prove the circuit is safely dead",
-                "To time the job",
-                "To weigh a component"
-              ],
-              "correct": 1
-            },
-            {
-              "q": "Testing \"continuity\" tells you:",
-              "options": [
-                "Whether a wire path is complete and unbroken",
-                "The colour of a cable",
-                "The cost of a fault",
-                "The building's total power use"
-              ],
-              "correct": 0
-            }
-          ],
-          "archived": false
-        },
-        {
-          "id": "insulated-screwdriver",
-          "name": "Insulated Screwdriver",
-          "icon": "🪛",
-          "short": "VDE-rated insulation protects against shock near live parts.",
-          "what": "An insulated screwdriver is rated (commonly VDE 1000V) with insulation built into the handle and shaft to protect against electric shock when working near live parts.",
-          "usage": "Electricians use VDE-rated tools whenever there's a risk of contact with a live conductor — extra protection layered on top of safe isolation procedures, never a replacement for them.",
-          "model": "screwdriver",
-          "photo": null,
-          "video": {
-            "youtube": "0IOukPkvOtc",
-            "file": ""
-          },
-          "parts": [
-            {
-              "label": "Insulated handle",
-              "body": "Moulded, tested insulation rated to a specific voltage (commonly 1000V) — the tool's main safety feature.",
-              "x": null,
-              "y": null,
-              "pos": [
-                0,
-                0.24,
-                0.04
-              ]
-            },
-            {
-              "label": "Insulated shaft",
-              "body": "Unlike a standard screwdriver, the metal shaft itself is coated in insulation, right up to the tip.",
-              "x": null,
-              "y": null,
-              "pos": [
-                0,
-                -0.12,
-                0.02
-              ]
-            },
-            {
-              "label": "Tip",
-              "body": "Only the very tip is bare metal, sized to fit the screw head precisely and avoid slipping.",
-              "x": null,
-              "y": null,
-              "pos": [
-                0,
-                -0.48,
-                0.02
-              ]
-            }
-          ],
-          "quiz": [
-            {
-              "q": "What does \"VDE rated\" mean for a screwdriver?",
-              "options": [
-                "It's tested and insulated for use near live electrical parts",
-                "It's just a colour standard",
-                "It means it's magnetic",
-                "It means it's extra long"
-              ],
-              "correct": 0
-            },
-            {
-              "q": "Insulated tools are used:",
-              "options": [
-                "Instead of switching off the power",
-                "As extra protection alongside safe isolation",
-                "Only for plumbing work",
-                "Only for show"
-              ],
-              "correct": 1
-            },
-            {
-              "q": "What should you check before using one?",
-              "options": [
-                "The handle colour matches your van",
-                "The insulation isn't damaged or worn",
-                "It's the most expensive one available",
-                "Nothing — they're always safe"
               ],
               "correct": 1
             }
