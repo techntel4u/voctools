@@ -37,7 +37,7 @@ You need a GitHub token so the portal can save changes.
 5. In the portal, press **Settings** and fill in:
    - **Owner** — your GitHub username or organisation
    - **Repository** — `voctools`
-   - **Branch** — must be the branch GitHub Pages publishes (press *List branches* to see them). There is no default: a branch that does not exist is the most common cause of a failed publish.
+   - **Branch** — `main` (press *List branches* to confirm). This must be the same branch GitHub Pages publishes from. There is no default: a branch that does not exist is the most common cause of a failed publish.
    - **Token** — paste it
 
 Press **Test connection** before saving. It checks each thing separately and tells you exactly what is wrong — a bad token, a repository the token cannot see, or a branch that does not exist — rather than leaving you with a bare error at publish time.

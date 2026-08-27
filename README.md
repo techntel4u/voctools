@@ -57,7 +57,7 @@ A student in the headset never has to take it off: the VR menu's **Change tool o
 
 WebXR requires **HTTPS**, so the easiest route is GitHub Pages:
 
-1. In this repository go to **Settings → Pages**, set the source branch, and save.
+1. In this repository go to **Settings → Pages**, set the source to the **`main`** branch, and save.
 2. Open the published `https://<user>.github.io/voctools/` link in the headset's browser (e.g. Meta Quest Browser).
 3. Pick a trade and a tool, then press **Enter VR**.
 4. Point a controller at the menu panel on the right and pull the trigger to open a point — the card appears over the tool, straight ahead. Buttons grow slightly when your ray is on them. Push the thumbstick left or right to spin the tool.
@@ -79,4 +79,4 @@ python3 -m http.server 8000
 - Only the pipe wrench has a real photograph so far. The other five tools still render the stylised procedural 3D stand-ins — add photos per [media/tools/README.md](media/tools/README.md) to switch them over.
 - The embedded YouTube video IDs are placeholders — review and replace them with college-approved content before use with students. The same applies to `media/sample-tool-clip.*`, the generated placeholder the headset plays.
 - Branding (purple/gold palette, logo) follows the City of Wolverhampton College website; the logo is hot-linked from wolvcoll.ac.uk and hides itself gracefully if unavailable.
-- The Electrical Installation trade is a mock-up to show how additional trades slot into the same data structure (see `PROFESSIONS` in `index.html`).
+- The Electrical Installation trade is a mock-up to show how additional trades slot into the same data structure (see `content.json`, or edit it in the admin portal).
